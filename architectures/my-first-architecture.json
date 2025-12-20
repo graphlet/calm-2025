@@ -24,7 +24,84 @@
         "framework": "fastapi",
         "version": "0.1.0"
       }
+    },
+    {
+      "unique-id": "end-user",
+      "node-type": "actor",
+      "name": "End User",
+      "description": "An end user or customer who queries the Market Sentiment Service with a stock ticker to receive a categorical sentiment response.",
+      "metadata": {
+        "role": "customer",
+        "channel": "web"
+      }
+    },
+    {
+      "unique-id": "market-sentiment-db",
+      "node-type": "database",
+      "name": "Market Sentiment Database",
+      "description": "Stores sentiment analysis results and historical ticker data for the Market Sentiment Service.",
+      "interfaces": [
+        {
+          "unique-id": "db-connection",
+          "host": "db.internal.local",
+          "port": 5432
+        }
+      ],
+      "metadata": {
+        "engine": "postgres",
+        "version": "15"
+      }
+    }
+    ,
+    {
+      "unique-id": "market-sentiment-system",
+      "node-type": "system",
+      "name": "Market Sentiment System",
+      "description": "Logical system containing the Market Sentiment Service and its database.",
+      "metadata": {
+        "owner": "Data Science Team"
+      }
     }
   ],
-  "relationships": []
+  "relationships": [
+    {
+      "unique-id": "service-to-db-connection",
+      "description": "Market Sentiment Service connects to its primary database for reads and writes.",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "market-sentiment-service",
+            "interfaces": ["sentiment-http-api"]
+          },
+          "destination": {
+            "node": "market-sentiment-db",
+            "interfaces": ["db-connection"]
+          }
+        }
+      },
+      "protocol": "TCP"
+    }
+    ,
+    {
+      "unique-id": "end-user-interacts-service",
+      "description": "End user interacts with the Market Sentiment Service to request sentiment for a given ticker.",
+      "relationship-type": {
+        "interacts": {
+          "actor": "end-user",
+          "nodes": ["market-sentiment-service"]
+        }
+      }
+    }
+    ,
+    {
+      "unique-id": "market-sentiment-system-composition",
+      "description": "Market Sentiment System is composed of the service and its database.",
+      "relationship-type": {
+        "composed-of": {
+          "container": "market-sentiment-system",
+          "nodes": ["market-sentiment-service", "market-sentiment-db"]
+        }
+      }
+    }
+  ]
 }
