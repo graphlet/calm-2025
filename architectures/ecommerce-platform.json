@@ -1,0 +1,303 @@
+{
+  "$schema": "https://calm.finos.org/release/1.1/meta/calm.json",
+  "unique-id": "ecommerce-order-platform",
+  "name": "E-Commerce Order Processing Platform",
+  "description": "E-commerce order processing platform",
+  "metadata": {
+    "owner": "graphlet@gmail.com",
+    "version": "1.0.0",
+    "created": "2025-12-20",
+    "description": "E-commerce order processing platform",
+    "tags": ["ecommerce", "microservices", "orders"]
+  },
+  "nodes": [
+    {
+      "unique-id": "customer",
+      "node-type": "actor",
+      "name": "Customer",
+      "description": "End customer who places orders via the storefront",
+      "metadata": {
+        "role": "end-customer"
+      }
+    },
+    {
+      "unique-id": "admin",
+      "node-type": "actor",
+      "name": "Administrator",
+      "description": "Platform administrator who manages orders and inventory",
+      "metadata": {
+        "role": "admin"
+      }
+    },
+    {
+      "unique-id": "api-gateway",
+      "node-type": "service",
+      "name": "API Gateway",
+      "description": "Public API gateway that routes requests to backend services",
+      "interfaces": [
+        {
+          "unique-id": "api-gateway-http",
+          "definition-url": "../patterns/rest-api-interface.json",
+          "config": {
+            "host": "api.example.com",
+            "port": 443,
+            "basePath": "/",
+            "authentication": "API-Key"
+          }
+        }
+      ],
+      "metadata": {
+        "owner": "Platform Team",
+        "repository": "https://git.example.com/org/api-gateway",
+        "deployment-type": "container",
+        "sla-tier": "tier-1"
+      }
+    },
+    {
+      "unique-id": "order-service",
+      "node-type": "service",
+      "name": "Order Service",
+      "description": "Handles order creation, updates and queries",
+      "interfaces": [
+        {
+          "unique-id": "order-service-http",
+          "definition-url": "../patterns/rest-api-interface.json",
+          "config": {
+            "host": "order.internal",
+            "port": 8080,
+            "basePath": "/orders",
+            "authentication": "OAuth2"
+          }
+        }
+      ],
+      "metadata": {
+        "owner": "Orders Team",
+        "repository": "https://git.example.com/org/order-service",
+        "deployment-type": "container",
+        "sla-tier": "tier-1"
+      }
+    },
+    {
+      "unique-id": "inventory-service",
+      "node-type": "service",
+      "name": "Inventory Service",
+      "description": "Maintains product inventory and availability",
+      "interfaces": [
+        {
+          "unique-id": "inventory-service-http",
+          "definition-url": "../patterns/rest-api-interface.json",
+          "config": {
+            "host": "inventory.internal",
+            "port": 8081,
+            "basePath": "/inventory",
+            "authentication": "OAuth2"
+          }
+        }
+      ],
+      "metadata": {
+        "owner": "Inventory Team",
+        "repository": "https://git.example.com/org/inventory-service",
+        "deployment-type": "container",
+        "sla-tier": "tier-2"
+      }
+    },
+    {
+      "unique-id": "payment-service",
+      "node-type": "service",
+      "name": "Payment Service",
+      "description": "Processes payments with external payment gateways",
+      "interfaces": [
+        {
+          "unique-id": "payment-service-http",
+          "definition-url": "../patterns/rest-api-interface.json",
+          "config": {
+            "host": "payment.internal",
+            "port": 8082,
+            "basePath": "/payments",
+            "authentication": "API-Key"
+          }
+        }
+      ],
+      "metadata": {
+        "owner": "Payments Team",
+        "repository": "https://git.example.com/org/payment-service",
+        "deployment-type": "container",
+        "sla-tier": "tier-1"
+      }
+    },
+    {
+      "unique-id": "order-db",
+      "node-type": "database",
+      "name": "Order Database",
+      "description": "Primary store for order data",
+      "interfaces": [
+        {
+          "unique-id": "order-db-jdbc",
+          "protocol": "JDBC",
+          "host": "order-db.internal",
+          "port": 5432,
+          "database": "orders"
+        }
+      ],
+      "metadata": {
+        "owner": "Data Team",
+        "repository": "https://git.example.com/org/order-db",
+        "deployment-type": "managed-db",
+        "sla-tier": "tier-1"
+      }
+    },
+    {
+      "unique-id": "inventory-db",
+      "node-type": "database",
+      "name": "Inventory Database",
+      "description": "Stores inventory and stock levels",
+      "interfaces": [
+        {
+          "unique-id": "inventory-db-jdbc",
+          "protocol": "JDBC",
+          "host": "inventory-db.internal",
+          "port": 5432,
+          "database": "inventory"
+        }
+      ],
+      "metadata": {
+        "owner": "Data Team",
+        "repository": "https://git.example.com/org/inventory-db",
+        "deployment-type": "managed-db",
+        "sla-tier": "tier-2"
+      }
+    },
+    {
+      "unique-id": "ecommerce-platform",
+      "node-type": "system",
+      "name": "E-Commerce Platform",
+      "description": "Logical system containing the e-commerce services and databases",
+      "metadata": {
+        "owner": "Platform Team"
+      }
+    }
+    ,
+    {
+      "unique-id": "external-payment-gateway",
+      "node-type": "system",
+      "name": "External Payment Provider",
+      "description": "Third-party payment gateway used to process customer payments",
+      "interfaces": [
+        {
+          "unique-id": "external-payment-api",
+          "definition-url": "../patterns/rest-api-interface.json",
+          "config": {
+            "host": "payments.external",
+            "port": 443,
+            "basePath": "/api",
+            "authentication": "API-Key"
+          }
+        }
+      ],
+      "metadata": {
+        "owner": "External Vendor",
+        "contact": "support@payments.example.com"
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "unique-id": "customer-interacts-gateway",
+      "description": "Customer interacts with the API Gateway",
+      "relationship-type": {
+        "interacts": { "actor": "customer", "nodes": ["api-gateway"] }
+      }
+    },
+    {
+      "unique-id": "admin-interacts-gateway",
+      "description": "Administrator interacts with the API Gateway",
+      "relationship-type": {
+        "interacts": { "actor": "admin", "nodes": ["api-gateway"] }
+      }
+    },
+    {
+      "unique-id": "gateway-to-order",
+      "description": "API Gateway routes requests to Order Service",
+      "relationship-type": {
+        "connects": {
+          "source": { "node": "api-gateway", "interfaces": ["api-gateway-http"] },
+          "destination": { "node": "order-service", "interfaces": ["order-service-http"] }
+        }
+      },
+      "protocol": "HTTPS",
+      "metadata": { "monitoring": true }
+    },
+    {
+      "unique-id": "gateway-to-inventory",
+      "description": "API Gateway routes requests to Inventory Service",
+      "relationship-type": {
+        "connects": {
+          "source": { "node": "api-gateway", "interfaces": ["api-gateway-http"] },
+          "destination": { "node": "inventory-service", "interfaces": ["inventory-service-http"] }
+        }
+      },
+      "protocol": "HTTPS",
+      "metadata": { "monitoring": true }
+    },
+    {
+      "unique-id": "order-to-orderdb",
+      "description": "Order Service persists orders to Order Database",
+      "relationship-type": {
+        "connects": {
+          "source": { "node": "order-service", "interfaces": ["order-service-http"] },
+          "destination": { "node": "order-db", "interfaces": ["order-db-jdbc"] }
+        }
+      },
+      "protocol": "JDBC",
+      "metadata": { "latency-sla": "< 100ms", "monitoring": true }
+    },
+    {
+      "unique-id": "order-to-payment",
+      "description": "Order Service calls Payment Service to process payments",
+      "relationship-type": {
+        "connects": {
+          "source": { "node": "order-service", "interfaces": ["order-service-http"] },
+          "destination": { "node": "payment-service", "interfaces": ["payment-service-http"] }
+        }
+      },
+      "protocol": "HTTPS",
+      "metadata": { "monitoring": true, "circuit-breaker": true }
+    },
+    {
+      "unique-id": "inventory-to-inventorydb",
+      "description": "Inventory Service persists stock levels to Inventory Database",
+      "relationship-type": {
+        "connects": {
+          "source": { "node": "inventory-service", "interfaces": ["inventory-service-http"] },
+          "destination": { "node": "inventory-db", "interfaces": ["inventory-db-jdbc"] }
+        }
+      },
+      "protocol": "JDBC",
+      "metadata": { "monitoring": true }
+    },
+    {
+      "unique-id": "platform-composed-of",
+      "description": "E-Commerce Platform contains all services and databases",
+      "relationship-type": {
+        "composed-of": {
+          "container": "ecommerce-platform",
+          "nodes": ["api-gateway", "order-service", "inventory-service", "payment-service", "order-db", "inventory-db"]
+        }
+      }
+    }
+    ,
+    {
+      "unique-id": "payment-to-external-gateway",
+      "description": "Payment Service connects to external payment provider",
+      "relationship-type": {
+        "connects": {
+          "source": { "node": "payment-service", "interfaces": ["payment-service-http"] },
+          "destination": { "node": "external-payment-gateway", "interfaces": ["external-payment-api"] }
+        }
+      },
+      "protocol": "HTTPS",
+      "metadata": { "monitoring": true, "circuit-breaker": true, "latency-sla": "< 300ms" }
+    }
+  ]
+
+}
