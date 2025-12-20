@@ -1,0 +1,30 @@
+{
+  "$schema": "https://calm.finos.org/release/1.1/meta/calm.json",
+  "unique-id": "market-sentiment-service-architecture",
+  "name": "Market Sentiment Service Architecture",
+  "description": "Minimal architecture describing a market sentiment service that accepts a stock ticker and returns categorical sentiment responses.",
+  "metadata": {
+    "version": "0.1.0",
+    "owner": "Data Science Team"
+  },
+  "nodes": [
+    {
+      "unique-id": "market-sentiment-service",
+      "node-type": "service",
+      "name": "Market Sentiment Service",
+      "description": "Given a stock ticker symbol (for example 'AAPL'), returns a categorical sentiment: 'Bullish', 'Bearish', 'Neutral', or 'Mixed'.",
+      "interfaces": [
+        {
+          "unique-id": "sentiment-http-api",
+          "url": "https://sentiment.example.internal/api/v1/sentiment"
+        }
+      ],
+      "metadata": {
+        "runtime": "python",
+        "framework": "fastapi",
+        "version": "0.1.0"
+      }
+    }
+  ],
+  "relationships": []
+}
