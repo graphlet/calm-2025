@@ -12,12 +12,23 @@
       "unique-id": "market-sentiment-service",
       "node-type": "service",
       "name": "Market Sentiment Service",
-      "description": "Given a stock ticker symbol (for example 'AAPL'), returns a categorical sentiment: 'Bullish', 'Bearish', 'Neutral', or 'Mixed'.",
-      "interfaces": [
+      "description": "Given a stock ticker symbol (for example 'AAPL'), returns a categorical sentiments",
+            "interfaces": [
         {
           "unique-id": "sentiment-http-api",
           "url": "https://sentiment.example.internal/api/v1/sentiment"
         }
+              ,
+                {
+                "unique-id": "sentiment-api-host",
+                "definition-url": "../patterns/rest-api-interface.json",
+                "config": {
+                  "host": "api.example.com",
+                  "port": 443,
+                  "basePath": "/api/v1",
+                  "authentication": "OAuth2"
+                }
+              }
       ],
       "metadata": {
         "runtime": "python",
@@ -46,6 +57,14 @@
           "host": "db.internal.local",
           "port": 5432
         }
+        ,
+        {
+          "unique-id": "db-jdbc-interface",
+          "protocol": "JDBC",
+          "host": "db.example.com",
+          "port": 5432,
+          "database": "sentiment_store"
+        }
       ],
       "metadata": {
         "engine": "postgres",
@@ -71,11 +90,11 @@
         "connects": {
           "source": {
             "node": "market-sentiment-service",
-            "interfaces": ["sentiment-http-api"]
+            "interfaces": ["sentiment-api-host"]
           },
           "destination": {
             "node": "market-sentiment-db",
-            "interfaces": ["db-connection"]
+            "interfaces": ["db-jdbc-interface"]
           }
         }
       },
