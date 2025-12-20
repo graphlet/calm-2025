@@ -4,8 +4,11 @@
   "name": "Market Sentiment Service Architecture",
   "description": "Minimal architecture describing a market sentiment service that accepts a stock ticker and returns categorical sentiment responses.",
   "metadata": {
-    "version": "0.1.0",
-    "owner": "Data Science Team"
+    "owner": "graphlet@gmail.com",
+    "version": "1.0.0",
+    "created": "2025-12-20",
+    "description": "Architecture for the Market Sentiment Service demonstrating nodes, interfaces, and relationships.",
+    "tags": ["learning", "authentication", "demo"]
   },
   "nodes": [
     {
@@ -33,7 +36,11 @@
       "metadata": {
         "runtime": "python",
         "framework": "fastapi",
-        "version": "0.1.0"
+        "version": "0.1.0",
+        "tech-owner": "Data Science Team",
+        "repository": "https://git.example.com/org/market-sentiment-service",
+        "deployment-type": "container",
+        "sla-tier": "tier-2"
       }
     },
     {
@@ -98,7 +105,12 @@
           }
         }
       },
-      "protocol": "TCP"
+      "protocol": "TCP",
+      "metadata": {
+        "latency-sla": "< 100ms",
+        "monitoring": true,
+        "circuit-breaker": true
+      }
     }
     ,
     {
