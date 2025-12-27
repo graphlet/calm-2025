@@ -1,0 +1,39 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Company Node Standard",
+    "description": "Extends the CALM core node definition with company-specific operational properties.",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "costCenter": {
+                    "type": "string",
+                    "pattern": "^CC-[0-9]{4}$",
+                    "description": "Company cost center code. Must use the format 'CC-XXXX' where X are digits, e.g., CC-1234."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "Team or individual responsible for the node (business or technical owner)."
+                },
+                "environment": {
+                    "type": "string",
+                    "enum": [
+                        "development",
+                        "staging",
+                        "production"
+                    ],
+                    "description": "Deployment environment for this node. Must be one of: development, staging, production."
+                }
+            },
+            "required": [
+                "costCenter",
+                "owner"
+            ],
+            "additionalProperties": true
+        }
+    ]
+}

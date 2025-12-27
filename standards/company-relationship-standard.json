@@ -1,0 +1,35 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Company Relationship Standard",
+    "description": "Extends the CALM core relationship definition with company-specific operational properties.",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/relationship"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "dataClassification": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "internal",
+                        "confidential",
+                        "restricted"
+                    ],
+                    "description": "Classification of data transmitted over this relationship. Use 'public', 'internal', 'confidential', or 'restricted'."
+                },
+                "encrypted": {
+                    "type": "boolean",
+                    "description": "Indicates whether the communication over this relationship is protected using encryption (e.g., TLS/mTLS)."
+                }
+            },
+            "required": [
+                "dataClassification",
+                "encrypted"
+            ],
+            "additionalProperties": true
+        }
+    ]
+}
