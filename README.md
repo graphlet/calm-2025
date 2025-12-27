@@ -23,6 +23,7 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 17: Create first CALM pattern for web applications
 - [x] Day 18: Create CALM Standards for organizational node and relationship requirements
 - [x] Day 19: Create Company Base Pattern to enforce Standards
+- [x] Day 20: Multi-pattern validation (structure + standards)
 
 ## Architectures
 
@@ -31,6 +32,19 @@ This directory will contain CALM architecture files documenting systems.
 ## Patterns
 
 This directory will contain CALM patterns for architectural governance.
+
+## Multi-Pattern Validation
+
+Structural patterns constrain topology (which nodes and relationships must exist). Standards patterns constrain properties (operational and compliance fields that every node/relationship must include).
+
+Validate against both to ensure an architecture has the correct shape and meets company policy. Example commands:
+
+```bash
+calm validate -p patterns/web-app-pattern.json -a architectures/generated-webapp.json
+calm validate -p patterns/company-base-pattern.json -a architectures/generated-webapp.json -u url-mapping.json
+```
+
+Use this approach in CI to gate merges: run structural validation first, then Standards validation (fail the build on any errors).
 
 ## Docs
 

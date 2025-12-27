@@ -4,13 +4,19 @@
       "unique-id": "web-frontend",
       "node-type": "webclient",
       "name": "Web Frontend",
-      "description": "The user-facing web interface that serves static assets and client-side application logic; it initiates API requests to the backend."
+      "description": "The user-facing web interface that serves static assets and client-side application logic; it initiates API requests to the backend.",
+      "costCenter": "CC-1001",
+      "owner": "frontend-team",
+      "environment": "production"
     },
     {
       "unique-id": "api-service",
       "node-type": "service",
       "name": "API Service",
       "description": "The backend API that implements business logic, validation, and orchestration; it serves requests from the frontend and reads/writes data to the database.",
+      "costCenter": "CC-2001",
+      "owner": "backend-team",
+      "environment": "production",
       "interfaces": [
         {
           "unique-id": "api-service-https",
@@ -24,6 +30,9 @@
       "node-type": "database",
       "name": "Application Database",
       "description": "Primary PostgreSQL database storing application state, user records, and transactional data.",
+      "costCenter": "CC-3001",
+      "owner": "data-team",
+      "environment": "production",
       "interfaces": [
         {
           "unique-id": "app-database-postgres",
@@ -46,7 +55,9 @@
             "node": "api-service"
           }
         }
-      }
+      },
+      "dataClassification": "internal",
+      "encrypted": true
     },
     {
       "unique-id": "api-to-database",
@@ -60,7 +71,9 @@
             "node": "app-database"
           }
         }
-      }
+      },
+      "dataClassification": "confidential",
+      "encrypted": true
     }
   ],
   "$schema": "https://example.com/patterns/web-app-pattern.json"
