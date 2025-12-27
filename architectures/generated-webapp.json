@@ -1,0 +1,67 @@
+{
+  "nodes": [
+    {
+      "unique-id": "web-frontend",
+      "node-type": "webclient",
+      "name": "Web Frontend",
+      "description": "The user-facing web interface that serves static assets and client-side application logic; it initiates API requests to the backend."
+    },
+    {
+      "unique-id": "api-service",
+      "node-type": "service",
+      "name": "API Service",
+      "description": "The backend API that implements business logic, validation, and orchestration; it serves requests from the frontend and reads/writes data to the database.",
+      "interfaces": [
+        {
+          "unique-id": "api-service-https",
+          "host": "api.example.com",
+          "port": 443
+        }
+      ]
+    },
+    {
+      "unique-id": "app-database",
+      "node-type": "database",
+      "name": "Application Database",
+      "description": "Primary PostgreSQL database storing application state, user records, and transactional data.",
+      "interfaces": [
+        {
+          "unique-id": "app-database-postgres",
+          "host": "db.example.com",
+          "port": 5432
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "unique-id": "frontend-to-api",
+      "description": "Web Frontend issues HTTPS requests to the API Service for data and actions invoked by users.",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "web-frontend"
+          },
+          "destination": {
+            "node": "api-service"
+          }
+        }
+      }
+    },
+    {
+      "unique-id": "api-to-database",
+      "description": "API Service connects to the Application Database using PostgreSQL for reads and writes required by application workflows.",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "api-service"
+          },
+          "destination": {
+            "node": "app-database"
+          }
+        }
+      }
+    }
+  ],
+  "$schema": "https://example.com/patterns/web-app-pattern.json"
+}
