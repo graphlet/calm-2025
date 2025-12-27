@@ -21,6 +21,8 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 15: Add operational metadata for support documentation
 - [x] Day 16: Generate operations documentation with docify templates
 - [x] Day 17: Create first CALM pattern for web applications
+- [x] Day 18: Create CALM Standards for organizational node and relationship requirements
+- [x] Day 19: Create Company Base Pattern to enforce Standards
 
 ## Architectures
 

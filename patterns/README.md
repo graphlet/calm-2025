@@ -47,6 +47,33 @@ The pattern reserves space for operational and descriptive details that are not 
 
 These flexible fields allow generated architectures to be environment- and team-specific while keeping the overall topology constrained.
 
+## Using `company-base-pattern.json`
+
+- Validate any architecture against company Standards:
+
+```bash
+calm validate -p patterns/company-base-pattern.json -a <architecture> -u url-mapping.json
+```
+
+## What the Pattern Enforces
+
+`patterns/company-base-pattern.json` enforces company-wide Standards on all nodes and relationships in an architecture:
+
+- All nodes must conform to the company node Standard (costCenter, owner, environment)
+- All relationships must conform to the company relationship Standard (dataClassification, encrypted)
+
+Unlike structural patterns, this pattern does not constrain the number, types, or connections of nodes/relationships — it only enforces property compliance.
+
+## Difference from `web-app-pattern.json`
+
+- **web-app-pattern.json**: Enforces specific structure (3 nodes, 2 relationships) — use for generating or validating fixed topologies
+- **company-base-pattern.json**: Enforces properties (Standards) on any structure — use for compliance validation across all architectures
+
+## When to Use Each Pattern Type
+
+- Use `web-app-pattern.json` when you need to generate or validate a specific 3-tier web application architecture
+- Use `company-base-pattern.json` when you want to ensure any architecture (regardless of structure) complies with company Standards for nodes and relationships
+
 ---
 
-See `patterns/web-app-pattern.json` for the exact schema and constraints.
+See `patterns/web-app-pattern.json` and `patterns/company-base-pattern.json` for the exact schemas and constraints.
