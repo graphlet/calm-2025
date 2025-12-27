@@ -13,7 +13,15 @@
     "created": "2025-12-20",
     "description": "E-commerce order processing platform",
     "tags": ["ecommerce", "microservices", "orders"],
-    "high-availability": true
+    "high-availability": true,
+    "monitoring": {
+      "grafana-dashboard": "https://grafana.example.com/d/ecommerce-overview",
+      "kibana-logs": "https://kibana.example.com/app/discover#/ecommerce-*",
+      "pagerduty-service": "https://pagerduty.example.com/services/ECOMMERCE",
+      "statuspage": "https://status.example.com",
+      "metrics-retention": "30 days",
+      "log-retention": "90 days"
+    }
   },
   "controls": {
     "security": {
@@ -70,6 +78,12 @@
           ]
         }
       },
+      "metadata": {
+        "business-impact": "Customers cannot complete purchases - direct revenue loss",
+        "degraded-behavior": "Orders queue in message broker; processed when service recovers",
+        "customer-communication": "Display 'Order processing delayed' message",
+        "sla": "99.9% availability, 30s p99 latency"
+      },
       "transitions": [
         {
           "relationship-unique-id": "customer-interacts-gateway",
@@ -102,6 +116,12 @@
       "unique-id": "inventory-check-flow",
       "name": "Inventory Stock Check",
       "description": "Admin checks and updates inventory stock levels",
+      "metadata": {
+        "business-impact": "Stock levels may be inaccurate - risk of overselling",
+        "degraded-behavior": "Fall back to cached inventory; flag orders for manual review",
+        "customer-communication": "Display 'Stock availability being confirmed'",
+        "sla": "99.5% availability, 500ms p99 latency"
+      },
       "transitions": [
         {
           "relationship-unique-id": "admin-interacts-gateway",
@@ -188,7 +208,15 @@
         }
       },
       "metadata": {
-        "owner": "Platform Team",
+        "owner": "platform-team",
+        "oncall-slack": "#oncall-platform",
+        "health-endpoint": "/actuator/health",
+        "runbook": "https://runbooks.example.com/api-gateway",
+        "tier": "tier-1",
+        "dependencies": ["order-service", "inventory-service"],
+        "dashboard": "https://grafana.example.com/d/api-gateway-1",
+        "log-query": "https://kibana.example.com/app/discover#/ecommerce-api-gateway-1*",
+        "alerts": ["api-gateway-1-high-5xx", "api-gateway-1-high-latency", "api-gateway-1-rate-limit-exceeded"],
         "repository": "https://git.example.com/org/api-gateway",
         "deployment-type": "container",
         "sla-tier": "tier-1"
@@ -227,7 +255,15 @@
         }
       },
       "metadata": {
-        "owner": "Platform Team",
+        "owner": "platform-team",
+        "oncall-slack": "#oncall-platform",
+        "health-endpoint": "/actuator/health",
+        "runbook": "https://runbooks.example.com/api-gateway",
+        "tier": "tier-1",
+        "dependencies": ["order-service", "inventory-service"],
+        "dashboard": "https://grafana.example.com/d/api-gateway-2",
+        "log-query": "https://kibana.example.com/app/discover#/ecommerce-api-gateway-2*",
+        "alerts": ["api-gateway-2-high-5xx", "api-gateway-2-high-latency", "api-gateway-2-rate-limit-exceeded"],
         "repository": "https://git.example.com/org/api-gateway",
         "deployment-type": "container",
         "sla-tier": "tier-1"
@@ -239,7 +275,15 @@
       "name": "Load Balancer",
       "description": "Entry point load balancer distributing traffic to API Gateway instances",
       "metadata": {
-        "owner": "Platform Team",
+        "owner": "platform-team",
+        "oncall-slack": "#oncall-platform",
+        "health-endpoint": "/health",
+        "runbook": "https://runbooks.example.com/load-balancer",
+        "tier": "tier-1",
+        "dependencies": ["api-gateway-1", "api-gateway-2"],
+        "dashboard": "https://grafana.example.com/d/load-balancer",
+        "log-query": "https://kibana.example.com/app/discover#/ecommerce-load-balancer*",
+        "alerts": ["load-balancer-high-5xx", "load-balancer-high-latency", "load-balancer-backend-unhealthy"],
         "deployment-type": "managed-load-balancer",
         "sla-tier": "tier-1"
       }
@@ -262,7 +306,38 @@
         }
       ],
       "metadata": {
-        "owner": "Orders Team",
+        "owner": "orders-team",
+        "oncall-slack": "#oncall-orders",
+        "health-endpoint": "/actuator/health",
+        "runbook": "https://runbooks.example.com/order-service",
+        "tier": "tier-1",
+        "dependencies": ["order-database-primary", "payment-service"],
+        "dashboard": "https://grafana.example.com/d/order-service",
+        "log-query": "https://kibana.example.com/app/discover#/ecommerce-order-service*",
+        "alerts": ["order-service-high-5xx", "order-service-high-latency", "order-service-db-connection-pool-exhausted"],
+        "failure-modes": [
+          {
+            "symptom": "HTTP 503 errors",
+            "likely-cause": "Database connection pool exhausted",
+            "check": "Check connection pool metrics in Grafana dashboard",
+            "remediation": "Scale up service replicas or increase pool size",
+            "escalation": "If persists > 5min, page DBA team"
+          },
+          {
+            "symptom": "High latency (>2s p99)",
+            "likely-cause": "Payment service degradation",
+            "check": "Check payment-service health and circuit breaker status",
+            "remediation": "Circuit breaker should open automatically; check fallback queue",
+            "escalation": "Contact payments-team if circuit breaker not triggering"
+          },
+          {
+            "symptom": "Order validation failures",
+            "likely-cause": "Inventory service returning stale data",
+            "check": "Verify inventory-service cache TTL and database replication lag",
+            "remediation": "Clear inventory cache; check replica sync status",
+            "escalation": "Contact platform-team for cache issues"
+          }
+        ],
         "repository": "https://git.example.com/org/order-service",
         "deployment-type": "container",
         "sla-tier": "tier-1"
@@ -297,7 +372,38 @@
         }
       ],
       "metadata": {
-        "owner": "Inventory Team",
+        "owner": "inventory-team",
+        "oncall-slack": "#oncall-inventory",
+        "health-endpoint": "/health",
+        "runbook": "https://runbooks.example.com/inventory-service",
+        "tier": "tier-2",
+        "dependencies": ["inventory-db"],
+        "dashboard": "https://grafana.example.com/d/inventory-service",
+        "log-query": "https://kibana.example.com/app/discover#/ecommerce-inventory-service*",
+        "alerts": ["inventory-service-high-5xx", "inventory-service-high-latency", "inventory-service-db-connection-timeout"],
+        "failure-modes": [
+          {
+            "symptom": "Database connection timeouts",
+            "likely-cause": "Inventory database overloaded or network issues",
+            "check": "Check database connection pool metrics and network latency",
+            "remediation": "Scale database replicas or increase connection pool size",
+            "escalation": "Page DBA team if database unresponsive"
+          },
+          {
+            "symptom": "Stale inventory data in responses",
+            "likely-cause": "Cache TTL too high or cache invalidation failures",
+            "check": "Verify cache hit rates and TTL settings in configuration",
+            "remediation": "Reduce cache TTL; implement cache warming strategies",
+            "escalation": "Contact platform-team for distributed cache issues"
+          },
+          {
+            "symptom": "High query latency (>500ms p95)",
+            "likely-cause": "Complex queries or database index issues",
+            "check": "Review slow query logs and database performance metrics",
+            "remediation": "Optimize queries; add missing database indexes",
+            "escalation": "Contact DBA team for query optimization assistance"
+          }
+        ],
         "repository": "https://git.example.com/org/inventory-service",
         "deployment-type": "container",
         "sla-tier": "tier-2"
@@ -332,7 +438,38 @@
         }
       },
       "metadata": {
-        "owner": "Payments Team",
+        "owner": "payments-team",
+        "oncall-slack": "#oncall-payments",
+        "health-endpoint": "/actuator/health",
+        "runbook": "https://runbooks.example.com/payment-service",
+        "tier": "tier-1",
+        "dependencies": ["external-payment-gateway"],
+        "dashboard": "https://grafana.example.com/d/payment-service",
+        "log-query": "https://kibana.example.com/app/discover#/ecommerce-payment-service*",
+        "alerts": ["payment-service-high-5xx", "payment-service-high-latency", "payment-service-payment-failure-rate"],
+        "failure-modes": [
+          {
+            "symptom": "Payment gateway timeouts (>30s)",
+            "likely-cause": "External payment provider API degradation",
+            "check": "Check external-payment-gateway status page and API response times",
+            "remediation": "Implement exponential backoff; check circuit breaker status",
+            "escalation": "Contact external provider support if widespread outage"
+          },
+          {
+            "symptom": "High payment failure rate (>5%)",
+            "likely-cause": "PCI compliance issue or provider API changes",
+            "check": "Review recent PCI audit logs and provider API documentation",
+            "remediation": "Validate payment payload format; check encryption certificates",
+            "escalation": "Escalate to security team for PCI compliance review"
+          },
+          {
+            "symptom": "Circuit breaker constantly opening",
+            "likely-cause": "Persistent external provider issues or misconfiguration",
+            "check": "Monitor circuit breaker metrics and external provider health",
+            "remediation": "Adjust circuit breaker thresholds; implement fallback payment methods",
+            "escalation": "Contact platform-team for circuit breaker tuning"
+          }
+        ],
         "repository": "https://git.example.com/org/payment-service",
         "deployment-type": "container",
         "sla-tier": "tier-1"
@@ -353,7 +490,10 @@
         }
       ],
       "metadata": {
-        "owner": "Data Team",
+        "owner": "data-team",
+        "backup-schedule": "daily at 02:00 UTC",
+        "restore-time": "4 hours",
+        "dba-contact": "dba@example.com",
         "repository": "https://git.example.com/org/order-db",
         "deployment-type": "managed-db",
         "sla-tier": "tier-1",
@@ -375,7 +515,10 @@
         }
       ],
       "metadata": {
-        "owner": "Data Team",
+        "owner": "data-team",
+        "backup-schedule": "N/A (replica)",
+        "restore-time": "2 hours (from primary)",
+        "dba-contact": "dba@example.com",
         "repository": "https://git.example.com/org/order-db",
         "deployment-type": "managed-db",
         "sla-tier": "tier-1",
@@ -447,7 +590,10 @@
         }
       ],
       "metadata": {
-        "owner": "Data Team",
+        "owner": "data-team",
+        "backup-schedule": "daily at 03:00 UTC",
+        "restore-time": "2 hours",
+        "dba-contact": "dba@example.com",
         "repository": "https://git.example.com/org/inventory-db",
         "deployment-type": "managed-db",
         "sla-tier": "tier-2"
