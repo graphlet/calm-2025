@@ -8,11 +8,7 @@
     "nodes": {
       "type": "array",
       "items": {
-        "allOf": [
-          {
-            "$ref": "https://example.com/standards/acme-node-standard.json"
-          }
-        ]
+        "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
       },
       "contains": {
         "type": "object",
