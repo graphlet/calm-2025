@@ -7,6 +7,116 @@
   "properties": {
     "nodes": {
       "type": "array",
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "unique-id": {
+                  "const": "notification-service"
+                },
+                "node-type": {
+                  "const": "service"
+                },
+                "name": {
+                  "const": "notification-service"
+                }
+              },
+              "required": [
+                "unique-id",
+                "node-type",
+                "name",
+                "description"
+              ]
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "unique-id": {
+                  "const": "notification-queue"
+                },
+                "node-type": {
+                  "const": "service"
+                },
+                "name": {
+                  "const": "Notification Queue"
+                }
+              },
+              "required": [
+                "unique-id",
+                "node-type",
+                "name",
+                "description"
+              ]
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "unique-id": {
+                  "const": "message-store-db"
+                },
+                "node-type": {
+                  "const": "database"
+                },
+                "name": {
+                  "const": "Message Store Database"
+                }
+              },
+              "required": [
+                "unique-id",
+                "node-type",
+                "name",
+                "description"
+              ]
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "unique-id": {
+                  "const": "api-gateway"
+                },
+                "node-type": {
+                  "const": "service"
+                },
+                "name": {
+                  "const": "API Gateway"
+                }
+              },
+              "required": [
+                "unique-id",
+                "node-type",
+                "name",
+                "description"
+              ]
+            }
+          ]
+        }
+      ],
       "items": {
         "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
       },
@@ -17,8 +127,7 @@
             "const": "service"
           },
           "name": {
-            "type": "string",
-            "pattern": "notification"
+            "const": "notification-service"
           },
           "unique-id": {
             "type": "string"
