@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/patterns/notification-service-pattern.json",
+  "title": "Notification Service Pattern",
+  "description": "Pattern to validate a notification service component. Enforces presence of a service node that declares supported delivery channels and a template location; requires HTTP API interface. Keeps provider choices flexible while enforcing operational properties.",
+  "type": "object",
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "https://example.com/standards/acme-node-standard.json"
+          }
+        ]
+      },
+      "contains": {
+        "type": "object",
+        "properties": {
+          "node-type": {
+            "const": "service"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "notification"
+          },
+          "unique-id": {
+            "type": "string"
+          },
+          "interfaces": {
+            "type": "array",
+            "contains": {
+              "type": "object",
+              "properties": {
+                "unique-id": {
+                  "type": "string",
+                  "pattern": "(ingest|api|api-gateway)"
+                },
+                "type": {
+                  "const": "http"
+                }
+              },
+              "required": [
+                "unique-id",
+                "type"
+              ]
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "supportedChannels": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "email",
+                    "sms",
+                    "push",
+                    "webhook",
+                    "slack"
+                  ]
+                },
+                "allOf": [
+                  {
+                    "contains": {
+                      "const": "email"
+                    }
+                  },
+                  {
+                    "contains": {
+                      "const": "webhook"
+                    }
+                  }
+                ]
+              },
+              "templates": {
+                "type": "string",
+                "format": "uri"
+              },
+              "defaultRetryPolicy": {
+                "type": "string"
+              },
+              "queue": {
+                "type": "string"
+              },
+              "slo": {
+                "type": "string"
+              },
+              "messageStore": {
+                "type": "object",
+                "properties": {
+                  "uri": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "retentionPolicy": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uri"
+                ],
+                "additionalProperties": true
+              },
+              "processing": {
+                "type": "object",
+                "properties": {
+                  "workers": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "concurrency": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "dlq": {
+                    "type": "string"
+                  },
+                  "idempotencyKey": {
+                    "type": "string"
+                  },
+                  "backoffPolicy": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": true
+              },
+              "adapters": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "type": "string"
+                    },
+                    "channel": {
+                      "type": "string"
+                    },
+                    "config": {
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "provider",
+                    "channel"
+                  ],
+                  "additionalProperties": true
+                }
+              }
+            },
+            "required": [
+              "supportedChannels",
+              "templates",
+              "messageStore"
+            ],
+            "additionalProperties": true,
+            "anyOf": [
+              {
+                "required": [
+                  "queue"
+                ]
+              },
+              {
+                "required": [
+                  "processing"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "node-type",
+          "metadata"
+        ]
+      }
+    },
+    "relationships": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}

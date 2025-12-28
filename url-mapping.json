@@ -1,5 +1,8 @@
 {
     "https://example.com/standards/company-node-standard.json": "standards/company-node-standard.json",
     "https://example.com/standards/company-relationship-standard.json": "standards/company-relationship-standard.json",
-    "https://example.com/patterns/company-base-pattern.json": "patterns/company-base-pattern.json"
+    "https://example.com/patterns/company-base-pattern.json": "patterns/company-base-pattern.json",
+    "https://example.com/standards/acme-node-standard.json": "standards/acme-node-standard.json",
+    "https://example.com/standards/acme-relationship-standard.json": "standards/acme-relationship-standard.json",
+    "https://example.com/patterns/acme-base-pattern.json": "patterns/acme-base-pattern.json"
 }

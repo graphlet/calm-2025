@@ -1,0 +1,33 @@
+{
+  "$schema": "https://calm.finos.org/release/1.1/meta/calm.json",
+  "$id": "https://example.com/patterns/acme-base-pattern.json",
+  "title": "Acme Base Pattern",
+  "description": "Enforces Acme Corp organizational standards across all architectures. Every node must comply with acme-node-standard.json (costCenter, owner, ownerContact, environment, dataSensitivity) and every relationship must comply with acme-relationship-standard.json (encrypted, dataClassification, sla, mode). Does not constrain architecture structure—only property compliance.",
+  "nodes": [
+    {
+      "unique-id": "placeholder-node",
+      "node-type": "system",
+      "name": "Placeholder Node",
+      "description": "Placeholder node for pattern validation"
+    }
+  ],
+  "relationships": [],
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          { "$ref": "https://example.com/standards/acme-node-standard.json" }
+        ]
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          { "$ref": "https://example.com/standards/acme-relationship-standard.json" }
+        ]
+      }
+    }
+  }
+}

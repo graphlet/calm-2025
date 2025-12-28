@@ -21,6 +21,8 @@ This standard extends the CALM core `node` definition and adds operational prope
 
 The Standard is implemented by composing the core CALM node schema with an additional object that defines these properties and marks `costCenter` and `owner` as required.
 
+Note: the Acme node Standard applies stricter validation for `production` nodes. When `environment` is set to `production` the schema requires the full set of operational properties (`costCenter`, `owner`, `ownerContact`, `environment`, and `dataSensitivity`). For non-production environments the baseline required fields are `costCenter` and `owner` to reduce developer friction during onboarding. Use CI gating to enforce production-only failures and surface warnings for non-production placeholders.
+
 ## Our Company Relationship Standard
 
 File: `standards/company-relationship-standard.json`

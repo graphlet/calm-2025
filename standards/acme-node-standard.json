@@ -1,0 +1,120 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Acme Node Standard",
+    "description": "Company-standard node schema for Acme Corp. Extends the CALM core node definition with required operational properties for FinOps, incident response, environment classification, and data sensitivity.",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "costCenter": {
+                    "type": "string",
+                    "pattern": "^CC-[0-9]{4}$",
+                    "description": "FinOps cost allocation code. Must follow format 'CC-XXXX' where X are digits, e.g., CC-1234."
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "Primary team or individual responsible for the component (e.g., team-name or team@acme.com)."
+                },
+                "ownerContact": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Contact email for the on-call or escalation contact for incidents."
+                },
+                "environment": {
+                    "type": "string",
+                    "enum": [
+                        "development",
+                        "staging",
+                        "qa",
+                        "production",
+                        "sandbox"
+                    ],
+                    "description": "Deployment environment classification used to apply environment-specific controls and policies."
+                },
+                "dataSensitivity": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "internal",
+                        "confidential",
+                        "restricted"
+                    ],
+                    "description": "Classification of the data stored or processed by this node; drives encryption, logging, and access control requirements."
+                },
+                "slaTier": {
+                    "type": "string",
+                    "enum": [
+                        "tier-1",
+                        "tier-2",
+                        "tier-3"
+                    ],
+                    "description": "Operational criticality tier for SRE and on-call prioritization (optional)."
+                },
+                "backupPolicy": {
+                    "type": "string",
+                    "description": "Reference or short description of backup/restore policy (e.g., 'daily, RTO 4h')."
+                },
+                "deploymentType": {
+                    "type": "string",
+                    "enum": [
+                        "container",
+                        "managed-db",
+                        "serverless",
+                        "vm",
+                        "managed-service"
+                    ],
+                    "description": "How the node is deployed/operated. Helps determine operational runbooks and responsibilities."
+                },
+                "runbook": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL to the runbook or playbook for operational procedures and incident response."
+                },
+                "monitoringDashboard": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Primary monitoring dashboard URL for this node."
+                },
+                "oncallChannel": {
+                    "type": "string",
+                    "description": "Optional chat channel or on-call notification channel (e.g., #oncall-platform)."
+                },
+                "pagerDutyService": {
+                    "type": "string",
+                    "description": "Optional PagerDuty or incident management service identifier/URL."
+                }
+            },
+            "additionalProperties": true,
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "environment": {
+                                "const": "production"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "costCenter",
+                            "owner",
+                            "ownerContact",
+                            "environment",
+                            "dataSensitivity"
+                        ]
+                    },
+                    "else": {
+                        "required": [
+                            "costCenter",
+                            "owner"
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

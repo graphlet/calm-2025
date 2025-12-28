@@ -24,6 +24,7 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 18: Create CALM Standards for organizational node and relationship requirements
 - [x] Day 19: Create Company Base Pattern to enforce Standards
 - [x] Day 20: Multi-pattern validation (structure + standards)
+- [x] Day 21: Enterprise Architect - Acme Corp governance framework
 
 ## Architectures
 

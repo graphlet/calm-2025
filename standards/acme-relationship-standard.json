@@ -1,0 +1,49 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Acme Relationship Standard",
+    "description": "Acme Corp relationship standard extending the CALM core relationship. Adds required operational properties used for security, classification, SLAs and delivery mode.",
+    "type": "object",
+    "allOf": [
+        {
+            "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/relationship"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "encrypted": {
+                    "type": "boolean",
+                    "description": "Whether data transmitted over this relationship is encrypted in transit (for example TLS/mTLS)."
+                },
+                "dataClassification": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "internal",
+                        "confidential",
+                        "restricted"
+                    ],
+                    "description": "Classification of data sent over this connection; drives logging, encryption, and access controls."
+                },
+                "sla": {
+                    "type": "string",
+                    "description": "Expected service-level objective for the relationship (e.g., '99.9% within 200ms' or 'best-effort')."
+                },
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "synchronous",
+                        "asynchronous"
+                    ],
+                    "description": "Indicates whether the interaction is synchronous (request/response) or asynchronous (event/queue based)."
+                }
+            },
+            "required": [
+                "encrypted",
+                "dataClassification",
+                "sla",
+                "mode"
+            ],
+            "additionalProperties": true
+        }
+    ]
+}
