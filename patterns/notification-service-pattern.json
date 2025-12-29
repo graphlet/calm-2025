@@ -1,289 +1,113 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/patterns/notification-service-pattern.json",
   "title": "Notification Service Pattern",
-  "description": "Pattern to validate a notification service component. Enforces presence of a service node that declares supported delivery channels and a template location; requires HTTP API interface. Keeps provider choices flexible while enforcing operational properties.",
+  "description": "Pattern for a Notification Service that receives alerts and routes them to storage, email, and webhooks.",
   "type": "object",
   "properties": {
     "nodes": {
       "type": "array",
       "prefixItems": [
         {
-          "allOf": [
-            {
-              "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "unique-id": {
-                  "const": "notification-service"
-                },
-                "node-type": {
-                  "const": "service"
-                },
-                "name": {
-                  "const": "notification-service"
-                }
-              },
-              "required": [
-                "unique-id",
-                "node-type",
-                "name",
-                "description"
-              ]
-            }
-          ]
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "api-endpoint" },
+            "node-type": { "const": "gateway" },
+            "name": { "const": "API Gateway" }
+          },
+          "required": ["unique-id", "node-type", "name"],
+          "additionalProperties": true
         },
         {
-          "allOf": [
-            {
-              "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "unique-id": {
-                  "const": "notification-queue"
-                },
-                "node-type": {
-                  "const": "service"
-                },
-                "name": {
-                  "const": "Notification Queue"
-                }
-              },
-              "required": [
-                "unique-id",
-                "node-type",
-                "name",
-                "description"
-              ]
-            }
-          ]
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "message-processor" },
+            "node-type": { "const": "service" },
+            "name": { "const": "Message Processor" }
+          },
+          "required": ["unique-id", "node-type", "name"],
+          "additionalProperties": true
         },
         {
-          "allOf": [
-            {
-              "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "unique-id": {
-                  "const": "message-store-db"
-                },
-                "node-type": {
-                  "const": "database"
-                },
-                "name": {
-                  "const": "Message Store Database"
-                }
-              },
-              "required": [
-                "unique-id",
-                "node-type",
-                "name",
-                "description"
-              ]
-            }
-          ]
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "message-store" },
+            "node-type": { "const": "database" },
+            "name": { "const": "Message Store" }
+          },
+          "required": ["unique-id", "node-type", "name"],
+          "additionalProperties": true
         },
         {
-          "allOf": [
-            {
-              "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "unique-id": {
-                  "const": "api-gateway"
-                },
-                "node-type": {
-                  "const": "service"
-                },
-                "name": {
-                  "const": "API Gateway"
-                }
-              },
-              "required": [
-                "unique-id",
-                "node-type",
-                "name",
-                "description"
-              ]
-            }
-          ]
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "email-provider" },
+            "node-type": { "const": "service" },
+            "name": { "const": "Email Provider" }
+          },
+          "required": ["unique-id", "node-type", "name"],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "webhook-target" },
+            "node-type": { "const": "service" },
+            "name": { "const": "Web hook" }
+          },
+          "required": ["unique-id", "node-type", "name"],
+          "additionalProperties": true
         }
       ],
-      "items": {
-        "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node"
-      },
-      "contains": {
-        "type": "object",
-        "properties": {
-          "node-type": {
-            "const": "service"
-          },
-          "name": {
-            "const": "notification-service"
-          },
-          "unique-id": {
-            "type": "string"
-          },
-          "interfaces": {
-            "type": "array",
-            "contains": {
-              "type": "object",
-              "properties": {
-                "unique-id": {
-                  "type": "string",
-                  "pattern": "(ingest|api|api-gateway)"
-                },
-                "type": {
-                  "const": "http"
-                }
-              },
-              "required": [
-                "unique-id",
-                "type"
-              ]
-            }
-          },
-          "metadata": {
-            "type": "object",
-            "properties": {
-              "supportedChannels": {
-                "type": "array",
-                "minItems": 2,
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "email",
-                    "sms",
-                    "push",
-                    "webhook",
-                    "slack"
-                  ]
-                },
-                "allOf": [
-                  {
-                    "contains": {
-                      "const": "email"
-                    }
-                  },
-                  {
-                    "contains": {
-                      "const": "webhook"
-                    }
-                  }
-                ]
-              },
-              "templates": {
-                "type": "string",
-                "format": "uri"
-              },
-              "defaultRetryPolicy": {
-                "type": "string"
-              },
-              "queue": {
-                "type": "string"
-              },
-              "slo": {
-                "type": "string"
-              },
-              "messageStore": {
-                "type": "object",
-                "properties": {
-                  "uri": {
-                    "type": "string",
-                    "format": "uri"
-                  },
-                  "retentionPolicy": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "uri"
-                ],
-                "additionalProperties": true
-              },
-              "processing": {
-                "type": "object",
-                "properties": {
-                  "workers": {
-                    "type": "integer",
-                    "minimum": 1
-                  },
-                  "concurrency": {
-                    "type": "integer",
-                    "minimum": 1
-                  },
-                  "dlq": {
-                    "type": "string"
-                  },
-                  "idempotencyKey": {
-                    "type": "string"
-                  },
-                  "backoffPolicy": {
-                    "type": "string"
-                  }
-                },
-                "additionalProperties": true
-              },
-              "adapters": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "provider": {
-                      "type": "string"
-                    },
-                    "channel": {
-                      "type": "string"
-                    },
-                    "config": {
-                      "type": "object"
-                    }
-                  },
-                  "required": [
-                    "provider",
-                    "channel"
-                  ],
-                  "additionalProperties": true
-                }
-              }
-            },
-            "required": [
-              "supportedChannels",
-              "templates",
-              "messageStore"
-            ],
-            "additionalProperties": true,
-            "anyOf": [
-              {
-                "required": [
-                  "queue"
-                ]
-              },
-              {
-                "required": [
-                  "processing"
-                ]
-              }
-            ]
-          }
-        },
-        "required": [
-          "node-type",
-          "metadata"
-        ]
-      }
+      "minItems": 5,
+      "maxItems": 5
     },
     "relationships": {
-      "type": "array"
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "api-to-processor" },
+            "source": { "const": "api-endpoint" },
+            "target": { "const": "message-processor" }
+          },
+          "required": ["unique-id", "source", "target"],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "processor-to-message-store" },
+            "source": { "const": "message-processor" },
+            "target": { "const": "message-store" }
+          },
+          "required": ["unique-id", "source", "target"],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "processor-to-email-provider" },
+            "source": { "const": "message-processor" },
+            "target": { "const": "email-provider" }
+          },
+          "required": ["unique-id", "source", "target"],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "unique-id": { "const": "processor-to-webhook-provider" },
+            "source": { "const": "message-processor" },
+            "target": { "const": "webhook-target" }
+          },
+          "required": ["unique-id", "source", "target"],
+          "additionalProperties": true
+        }
+      ],
+      "minItems": 4,
+      "maxItems": 4
     }
   },
-  "additionalProperties": true
+  "required": ["nodes", "relationships"]
 }
