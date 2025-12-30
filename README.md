@@ -25,6 +25,7 @@ This repository tracks my 24-day journey learning the Common Architecture Langua
 - [x] Day 19: Create Company Base Pattern to enforce Standards
 - [x] Day 20: Multi-pattern validation (structure + standards)
 - [x] Day 21: Enterprise Architect - Acme Corp governance framework
+- [x] Day 22: Product Developer - Notification Service architecture
 
 ## Architectures
 

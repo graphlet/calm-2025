@@ -1,0 +1,444 @@
+{
+  "unique-id": "notification-service",
+  "name": "Notification Service",
+  "description": "Notification Service",
+  "metadata": {
+    "owner": "john@architecthub.com",
+    "version": "1.0.0",
+    "created": "2025-12-30",
+    "tags": [
+      "notifications",
+      "microservices"
+    ],
+    "runbookUrl": "https://wiki.acme.corp/runbooks/notification-service",
+    "monitoringDashboardUrl": "https://datadog.acme.corp/dashboard/notification-service",
+    "oncallRotation": {
+      "primary": "notifications-team",
+      "secondary": "platform-team",
+      "scheduleUrl": "https://pagerduty.acme.corp/schedules/notification-service",
+      "escalationPolicy": "https://pagerduty.acme.corp/escalation-policies/notifications"
+    }
+  },
+  "flows": [
+    {
+      "unique-id": "user-registration-welcome-email-flow",
+      "name": "User Registration Welcome Email",
+      "description": "End-to-end flow for sending welcome email notifications when a new user registers in the system",
+      "metadata": {
+        "business-impact": "New users don't receive welcome emails - poor onboarding experience",
+        "degraded-behavior": "Emails queue in Kafka; delivered when service recovers",
+        "customer-communication": "Welcome email will arrive shortly",
+        "sla": "99.9% delivery within 30 seconds of registration"
+      },
+      "transitions": [
+        {
+          "relationship-unique-id": "api-to-identity-provider",
+          "sequence-number": 1,
+          "description": "External registration system calls Notification API; API validates authentication token with Identity Provider",
+          "direction": "source-to-destination"
+        },
+        {
+          "relationship-unique-id": "api-to-processor",
+          "sequence-number": 2,
+          "description": "API Gateway routes validated welcome email notification request to Message Processor",
+          "direction": "source-to-destination"
+        },
+        {
+          "relationship-unique-id": "processor-to-message-store",
+          "sequence-number": 3,
+          "description": "Message Processor persists notification record for audit trail and delivery tracking",
+          "direction": "source-to-destination"
+        },
+        {
+          "relationship-unique-id": "processor-to-kafka",
+          "sequence-number": 4,
+          "description": "Message Processor publishes welcome email event to Kafka notification.email topic",
+          "direction": "source-to-destination"
+        },
+        {
+          "relationship-unique-id": "kafka-to-email-provider",
+          "sequence-number": 5,
+          "description": "Email consumer reads event from Kafka and sends welcome email via Email Provider",
+          "direction": "source-to-destination"
+        },
+        {
+          "relationship-unique-id": "processor-to-message-store",
+          "sequence-number": 6,
+          "description": "Email consumer updates delivery status in Message Store after successful send",
+          "direction": "source-to-destination"
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "unique-id": "api-endpoint",
+      "node-type": "gateway",
+      "name": "API Gateway",
+      "description": "API Gateway that receives notification requests from external clients and internal services",
+      "costCenter": "CC-3401",
+      "owner": "platform-team@acme.com",
+      "ownerContact": "platform-oncall@acme.com",
+      "environment": "production",
+      "dataSensitivity": "internal",
+      "metadata": {
+        "repository": "https://github.com/acme/notification-gateway",
+        "oncallChannel": "#notifications-oncall",
+        "deploymentType": "container",
+        "platform": "Kubernetes",
+        "scaling": {
+          "type": "horizontal",
+          "minReplicas": 3,
+          "maxReplicas": 20,
+          "targetCPU": "70%",
+          "targetMemory": "80%"
+        },
+        "healthCheck": {
+          "endpoint": "/health",
+          "port": 8080,
+          "protocol": "HTTP"
+        }
+      },
+      "interfaces": [
+        {
+          "unique-id": "notification-rest-api",
+          "name": "Notification REST API",
+          "description": "RESTful API endpoint for submitting notification requests",
+          "protocol": "HTTPS",
+          "port": 443,
+          "path": "/api/v1/notifications"
+        }
+      ]
+    },
+    {
+      "unique-id": "message-processor",
+      "node-type": "service",
+      "name": "Message Processor",
+      "description": "Core service that processes notification messages, validates content, and routes to appropriate delivery channels",
+      "costCenter": "CC-3402",
+      "owner": "notifications-team@acme.com",
+      "ownerContact": "notifications-oncall@acme.com",
+      "environment": "production",
+      "dataSensitivity": "confidential",
+      "metadata": {
+        "repository": "https://github.com/acme/message-processor-service",
+        "oncallChannel": "#notifications-oncall",
+        "deploymentType": "container",
+        "platform": "Kubernetes",
+        "scaling": {
+          "type": "horizontal",
+          "minReplicas": 5,
+          "maxReplicas": 30,
+          "targetCPU": "65%",
+          "targetMemory": "75%"
+        },
+        "healthCheck": {
+          "endpoint": "/actuator/health",
+          "port": 8080,
+          "protocol": "HTTP"
+        }
+      }
+    },
+    {
+      "unique-id": "message-store",
+      "node-type": "database",
+      "name": "Message Store",
+      "description": "Persistent storage for notification history, delivery status, and audit logs",
+      "costCenter": "CC-3402",
+      "owner": "notifications-team@acme.com",
+      "ownerContact": "notifications-oncall@acme.com",
+      "environment": "production",
+      "dataSensitivity": "confidential",
+      "metadata": {
+        "repository": "https://github.com/acme/notification-infrastructure",
+        "oncallChannel": "#notifications-oncall",
+        "deploymentType": "managed-database",
+        "platform": "AWS RDS PostgreSQL",
+        "scaling": {
+          "type": "vertical",
+          "instanceClass": "db.r5.xlarge",
+          "storage": "500GB",
+          "iops": 3000
+        },
+        "healthCheck": {
+          "endpoint": "tcp",
+          "port": 5432,
+          "protocol": "TCP"
+        }
+      },
+      "interfaces": [
+        {
+          "unique-id": "database-connection",
+          "name": "Database Connection",
+          "description": "PostgreSQL database connection interface for storing notification messages and delivery status",
+          "protocol": "JDBC",
+          "port": 5432
+        }
+      ]
+    },
+    {
+      "unique-id": "email-provider",
+      "node-type": "service",
+      "name": "Email Provider",
+      "description": "Email delivery service that sends notifications via SMTP with template rendering and tracking",
+      "costCenter": "CC-3403",
+      "owner": "communications-team@acme.com",
+      "ownerContact": "comms-oncall@acme.com",
+      "environment": "production",
+      "dataSensitivity": "internal",
+      "metadata": {
+        "repository": "https://github.com/acme/email-notification-service",
+        "oncallChannel": "#communications-oncall",
+        "deploymentType": "container",
+        "platform": "Kubernetes",
+        "scaling": {
+          "type": "horizontal",
+          "minReplicas": 2,
+          "maxReplicas": 15,
+          "targetCPU": "60%"
+        },
+        "healthCheck": {
+          "endpoint": "/health",
+          "port": 8080,
+          "protocol": "HTTP"
+        }
+      },
+      "interfaces": [
+        {
+          "unique-id": "email-delivery-api",
+          "name": "Email Delivery API",
+          "description": "SMTP/API interface for sending email notifications to recipients",
+          "protocol": "HTTPS",
+          "port": 443,
+          "path": "/api/v1/send"
+        }
+      ]
+    },
+    {
+      "unique-id": "webhook-target",
+      "node-type": "service",
+      "name": "Web hook",
+      "description": "Webhook dispatcher that delivers notifications to registered HTTP endpoints with retry logic",
+      "costCenter": "CC-3402",
+      "owner": "notifications-team@acme.com",
+      "ownerContact": "notifications-oncall@acme.com",
+      "environment": "production",
+      "dataSensitivity": "internal",
+      "metadata": {
+        "repository": "https://github.com/acme/webhook-dispatcher",
+        "oncallChannel": "#notifications-oncall"
+      },
+      "interfaces": [
+        {
+          "unique-id": "webhook-delivery-endpoint",
+          "name": "Webhook Delivery Endpoint",
+          "description": "HTTP/HTTPS endpoint for receiving webhook notifications from the notification service",
+          "protocol": "HTTPS",
+          "port": 443,
+          "path": "/webhooks/notifications"
+        }
+      ]
+    },
+    {
+      "unique-id": "identity-provider",
+      "node-type": "service",
+      "name": "Identity Provider",
+      "description": "Authentication and authorization service that validates API requests and issues access tokens",
+      "costCenter": "CC-3404",
+      "owner": "security-team",
+      "ownerContact": "security@acme.corp",
+      "environment": "production",
+      "dataSensitivity": "confidential",
+      "metadata": {
+        "repository": "https://github.com/acme/identity-provider",
+        "oncallChannel": "#security-oncall",
+        "deploymentType": "container",
+        "platform": "Kubernetes",
+        "scaling": {
+          "type": "horizontal",
+          "minReplicas": 5,
+          "maxReplicas": 25,
+          "targetCPU": "75%"
+        },
+        "healthCheck": {
+          "endpoint": "/health",
+          "port": 8443,
+          "protocol": "HTTPS"
+        }
+      }
+    },
+    {
+      "unique-id": "kafka-event-bus",
+      "node-type": "system",
+      "name": "Kafka Event Bus",
+      "description": "Distributed event streaming platform that provides reliable async message delivery, retry mechanisms, and event ordering for notification processing",
+      "costCenter": "CC-3405",
+      "owner": "platform-team",
+      "ownerContact": "platform@acme.corp",
+      "environment": "production",
+      "dataSensitivity": "internal",
+      "metadata": {
+        "repository": "https://github.com/acme/kafka-cluster",
+        "oncallChannel": "#platform-oncall",
+        "deploymentType": "statefulset",
+        "platform": "Kubernetes",
+        "scaling": {
+          "type": "cluster",
+          "brokers": 5,
+          "partitions": 12,
+          "replicationFactor": 3
+        },
+        "healthCheck": {
+          "endpoint": "/",
+          "port": 9092,
+          "protocol": "TCP"
+        }
+      },
+      "interfaces": [
+        {
+          "unique-id": "kafka-publisher",
+          "name": "Kafka Publisher Interface",
+          "description": "Interface for publishing notification events to Kafka topics",
+          "protocol": "AMQP",
+          "port": 9092,
+          "metadata": {
+            "topics": [
+              "notification.email",
+              "notification.webhook"
+            ]
+          }
+        },
+        {
+          "unique-id": "kafka-consumer",
+          "name": "Kafka Consumer Interface",
+          "description": "Interface for subscribing to and consuming notification events from Kafka topics",
+          "protocol": "AMQP",
+          "port": 9092,
+          "metadata": {
+            "consumerGroups": [
+              "email-delivery-group",
+              "webhook-delivery-group"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "unique-id": "api-to-identity-provider",
+      "description": "API Gateway authenticates incoming requests by validating tokens with the Identity Provider before allowing access to notification services",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "api-endpoint"
+          },
+          "destination": {
+            "node": "identity-provider"
+          }
+        }
+      },
+      "protocol": "HTTPS",
+      "encrypted": true,
+      "dataClassification": "confidential",
+      "sla": "99.99% uptime with <100ms response time for token validation",
+      "mode": "synchronous"
+    },
+    {
+      "unique-id": "api-to-processor",
+      "description": "API Gateway forwards incoming notification requests with payload metadata to Message Processor",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "api-endpoint"
+          },
+          "destination": {
+            "node": "message-processor"
+          }
+        }
+      },
+      "protocol": "HTTPS",
+      "encrypted": true,
+      "dataClassification": "internal",
+      "sla": "99.9% within 200ms",
+      "mode": "synchronous"
+    },
+    {
+      "unique-id": "processor-to-message-store",
+      "description": "Message Processor persists notification records, delivery status, and audit trail to Message Store",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "message-processor"
+          },
+          "destination": {
+            "node": "message-store"
+          }
+        }
+      },
+      "protocol": "JDBC",
+      "encrypted": true,
+      "dataClassification": "confidential",
+      "sla": "99.95% within 100ms",
+      "mode": "synchronous"
+    },
+    {
+      "unique-id": "processor-to-kafka",
+      "description": "Message Processor publishes notification events to Kafka topics for reliable async processing and delivery",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "message-processor"
+          },
+          "destination": {
+            "node": "kafka-event-bus"
+          }
+        }
+      },
+      "protocol": "AMQP",
+      "encrypted": true,
+      "dataClassification": "internal",
+      "sla": "99.95% uptime with guaranteed message delivery and ordering",
+      "mode": "asynchronous"
+    },
+    {
+      "unique-id": "kafka-to-email-provider",
+      "description": "Kafka consumers read email notification events and forward them to the Email Provider with automatic retry on failures",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "kafka-event-bus"
+          },
+          "destination": {
+            "node": "email-provider"
+          }
+        }
+      },
+      "protocol": "HTTPS",
+      "encrypted": true,
+      "dataClassification": "internal",
+      "sla": "best-effort, retry 3 times",
+      "mode": "asynchronous"
+    },
+    {
+      "unique-id": "kafka-to-webhook-target",
+      "description": "Kafka consumers read webhook notification events and deliver them to external webhook targets with exponential backoff retry strategy",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "kafka-event-bus"
+          },
+          "destination": {
+            "node": "webhook-target"
+          }
+        }
+      },
+      "protocol": "HTTPS",
+      "encrypted": true,
+      "dataClassification": "internal",
+      "sla": "best-effort, retry with exponential backoff",
+      "mode": "asynchronous"
+    }
+  ],
+  "$schema": "https://example.com/patterns/notification-service-pattern.json"
+}
