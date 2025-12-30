@@ -29,7 +29,128 @@ classDef highlight fill:#f2bbae;
 
 ```
 ## Controls
-    _No controls defined._
+
+        ### Field Level Encryption
+
+        Application-level encryption for PII fields before storage
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/field-encryption" target="_blank">
+                                    https://internal-policy.acme.com/security/field-encryption
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>algorithm</td>
+                                            <td>AES-256-GCM</td>
+                                        </tr>
+                                        <tr>
+                                            <td>keyDerivation</td>
+                                            <td>PBKDF2-SHA256</td>
+                                        </tr>
+                                        <tr>
+                                            <td>iterations</td>
+                                            <td>10000</td>
+                                        </tr>
+                                        <tr>
+                                            <td>encryptedFields</td>
+                                            <td>[object Object]</td>
+                                        </tr>
+                                        <tr>
+                                            <td>keyRotationPolicy</td>
+                                            <td>90-days</td>
+                                        </tr>
+                                        <tr>
+                                            <td>keyWrapping</td>
+                                            <td>envelope-encryption</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Pii Tokenization
+
+        Replace PII with tokens for non-sensitive operations
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/tokenization" target="_blank">
+                                    https://internal-policy.acme.com/security/tokenization
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>provider</td>
+                                            <td>HashiCorp Vault</td>
+                                        </tr>
+                                        <tr>
+                                            <td>tokenFormat</td>
+                                            <td>format-preserving</td>
+                                        </tr>
+                                        <tr>
+                                            <td>fields</td>
+                                            <td>recipient_email,recipient_phone</td>
+                                        </tr>
+                                        <tr>
+                                            <td>detokenization</td>
+                                            <td>[object Object]</td>
+                                        </tr>
+                                        <tr>
+                                            <td>tokenTTL</td>
+                                            <td>24h</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
 
 ## Metadata
   <div className="table-container">

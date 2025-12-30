@@ -230,7 +230,175 @@ classDef highlight fill:#f2bbae;
 
 ```
 ## Controls
-    _No controls defined._
+
+        ### Encryption At Rest
+
+        Kafka topic and log encryption for event data
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/kafka-encryption" target="_blank">
+                                    https://internal-policy.acme.com/security/kafka-encryption
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>logEncryption</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>encryptionAlgorithm</td>
+                                            <td>AES-256-GCM</td>
+                                        </tr>
+                                        <tr>
+                                            <td>storageClass</td>
+                                            <td>encrypted</td>
+                                        </tr>
+                                        <tr>
+                                            <td>kmsKeyArn</td>
+                                            <td>arn:aws:kms:us-east-1:123456789:key/kafka-storage</td>
+                                        </tr>
+                                        <tr>
+                                            <td>topicRetention</td>
+                                            <td>7 days</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Encryption In Transit
+
+        Kafka broker and client TLS encryption requirements
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/kafka-tls" target="_blank">
+                                    https://internal-policy.acme.com/security/kafka-tls
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>listeners</td>
+                                            <td>SSL://9093</td>
+                                        </tr>
+                                        <tr>
+                                            <td>securityProtocol</td>
+                                            <td>SASL_SSL</td>
+                                        </tr>
+                                        <tr>
+                                            <td>saslMechanism</td>
+                                            <td>SCRAM-SHA-512</td>
+                                        </tr>
+                                        <tr>
+                                            <td>sslProtocol</td>
+                                            <td>TLSv1.3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>sslCipherSuites</td>
+                                            <td>TLS_AES_256_GCM_SHA384</td>
+                                        </tr>
+                                        <tr>
+                                            <td>clientAuth</td>
+                                            <td>required</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Access Control
+
+        Kafka ACLs for topic-level authorization
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/kafka-acls" target="_blank">
+                                    https://internal-policy.acme.com/security/kafka-acls
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>aclEnabled</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>topics</td>
+                                            <td>[object Object]</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
 
 ## Metadata
   <div className="table-container">

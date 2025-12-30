@@ -54,7 +54,25 @@ C4Deployment
     - [User Registration Welcome Email](flows/user-registration-welcome-email-flow)
 
 ## Controls
-  _No Controls defined._
+| Requirement URL               | Category    | Scope        | Applied To                |
+|-------------------------------|-----------|--------------|---------------------------|
+|https://internal-policy.acme.com/security/api-gateway-auth|authentication|Node|api-endpoint|
+|https://internal-policy.acme.com/security/token-validation-protocol|authentication|Relationship|api-to-identity-provider|
+|https://internal-policy.acme.com/security/api-authorization|authorization|Node|api-endpoint|
+|https://internal-policy.acme.com/security/api-gateway-hardening|security|Node|api-endpoint|
+|https://internal-policy.acme.com/security/field-encryption|field-level-encryption|Node|message-processor|
+|https://internal-policy.acme.com/security/tokenization|pii-tokenization|Node|message-processor|
+|https://internal-policy.acme.com/security/rds-encryption|encryption-at-rest|Node|message-store|
+|https://internal-policy.acme.com/security/kafka-encryption|encryption-at-rest|Node|kafka-event-bus|
+|https://internal-policy.acme.com/security/database-ssl|encryption-in-transit|Node|message-store|
+|https://internal-policy.acme.com/security/kafka-tls|encryption-in-transit|Node|kafka-event-bus|
+|https://internal-policy.acme.com/security/jdbc-ssl|encryption-in-transit|Relationship|processor-to-message-store|
+|https://internal-policy.acme.com/security/kafka-producer-tls|encryption-in-transit|Relationship|processor-to-kafka|
+|https://internal-policy.acme.com/security/kafka-consumer-tls|encryption-in-transit|Relationship|kafka-to-email-provider|
+|https://internal-policy.acme.com/security/column-encryption|pii-protection|Node|message-store|
+|https://internal-policy.acme.com/security/pii-access|pii-access-control|Node|message-store|
+|https://internal-policy.acme.com/security/pii-discovery|pii-discovery|Node|message-store|
+|https://internal-policy.acme.com/security/kafka-acls|access-control|Node|kafka-event-bus|
 
 ## Metadata
   <div className="table-container">

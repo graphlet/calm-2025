@@ -106,7 +106,179 @@ classDef highlight fill:#f2bbae;
 
 ```
 ## Controls
-    _No controls defined._
+
+        ### Authentication
+
+        API Gateway enforces OAuth2 JWT token validation for all incoming requests
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/api-gateway-auth" target="_blank">
+                                    https://internal-policy.acme.com/security/api-gateway-auth
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>provider</td>
+                                            <td>identity-provider</td>
+                                        </tr>
+                                        <tr>
+                                            <td>tokenType</td>
+                                            <td>JWT</td>
+                                        </tr>
+                                        <tr>
+                                            <td>validationEndpoint</td>
+                                            <td>/oauth/introspect</td>
+                                        </tr>
+                                        <tr>
+                                            <td>cacheTokens</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>cacheTTL</td>
+                                            <td>300</td>
+                                        </tr>
+                                        <tr>
+                                            <td>requireSecureTransport</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>signatureAlgorithm</td>
+                                            <td>RS256</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Authorization
+
+        API Gateway enforces role-based access control and rate limiting
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/api-authorization" target="_blank">
+                                    https://internal-policy.acme.com/security/api-authorization
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>model</td>
+                                            <td>RBAC</td>
+                                        </tr>
+                                        <tr>
+                                            <td>rateLimiting</td>
+                                            <td>[object Object]</td>
+                                        </tr>
+                                        <tr>
+                                            <td>allowedScopes</td>
+                                            <td>notifications.send,notifications.read,notifications.delete</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Security
+
+        API Gateway security hardening requirements
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/api-gateway-hardening" target="_blank">
+                                    https://internal-policy.acme.com/security/api-gateway-hardening
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>wafEnabled</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>ddosProtection</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>corsPolicy</td>
+                                            <td>strict</td>
+                                        </tr>
+                                        <tr>
+                                            <td>allowedOrigins</td>
+                                            <td>https://*.acme.com</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
 
 ## Metadata
   <div className="table-container">

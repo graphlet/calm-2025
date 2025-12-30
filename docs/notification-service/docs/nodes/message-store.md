@@ -97,7 +97,277 @@ classDef highlight fill:#f2bbae;
 
 ```
 ## Controls
-    _No controls defined._
+
+        ### Encryption At Rest
+
+        PostgreSQL database encryption for notification history and PII
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/rds-encryption" target="_blank">
+                                    https://internal-policy.acme.com/security/rds-encryption
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>transparentDataEncryption</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>kmsKeyArn</td>
+                                            <td>arn:aws:kms:us-east-1:123456789:key/notification-store</td>
+                                        </tr>
+                                        <tr>
+                                            <td>storageEncrypted</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>backupEncryption</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>performanceInsights</td>
+                                            <td>[object Object]</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Encryption In Transit
+
+        PostgreSQL SSL/TLS requirements for client connections
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/database-ssl" target="_blank">
+                                    https://internal-policy.acme.com/security/database-ssl
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>sslMode</td>
+                                            <td>verify-full</td>
+                                        </tr>
+                                        <tr>
+                                            <td>tlsVersion</td>
+                                            <td>1.3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>certificateValidation</td>
+                                            <td>required</td>
+                                        </tr>
+                                        <tr>
+                                            <td>clientCertificates</td>
+                                            <td>false</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Pii Protection
+
+        Column-level encryption for sensitive notification data
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/column-encryption" target="_blank">
+                                    https://internal-policy.acme.com/security/column-encryption
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>encryptedColumns</td>
+                                            <td>recipient_email,recipient_phone,notification_content,user_metadata</td>
+                                        </tr>
+                                        <tr>
+                                            <td>encryptionKey</td>
+                                            <td>application-level</td>
+                                        </tr>
+                                        <tr>
+                                            <td>searchableEncryption</td>
+                                            <td>false</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Pii Access Control
+
+        Role-based and attribute-based access for PII fields
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/pii-access" target="_blank">
+                                    https://internal-policy.acme.com/security/pii-access
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>model</td>
+                                            <td>ABAC</td>
+                                        </tr>
+                                        <tr>
+                                            <td>policies</td>
+                                            <td>[object Object]</td>
+                                        </tr>
+                                        <tr>
+                                            <td>breakGlassAccess</td>
+                                            <td>[object Object]</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        ### Pii Discovery
+
+        Automated PII field discovery and classification
+
+        <div className="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Requirement URL</th>
+                    <th>Config</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                                <a href="https://internal-policy.acme.com/security/pii-discovery" target="_blank">
+                                    https://internal-policy.acme.com/security/pii-discovery
+                                </a>
+                        </td>
+
+                        <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>scanningEnabled</td>
+                                            <td>true</td>
+                                        </tr>
+                                        <tr>
+                                            <td>scanFrequency</td>
+                                            <td>weekly</td>
+                                        </tr>
+                                        <tr>
+                                            <td>classificationLevels</td>
+                                            <td>public,internal,confidential,restricted</td>
+                                        </tr>
+                                        <tr>
+                                            <td>piiCategories</td>
+                                            <td>[object Object]</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
 
 ## Metadata
   <div className="table-container">

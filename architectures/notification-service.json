@@ -19,6 +19,191 @@
       "escalationPolicy": "https://pagerduty.acme.corp/escalation-policies/notifications"
     }
   },
+  "controls": {
+    "security": {
+      "description": "Authentication and authorization requirements for all API access",
+      "requirements": [
+        {
+          "requirement-url": "https://internal-policy.acme.com/security/api-authentication",
+          "config": {
+            "mechanism": "OAuth2 + JWT",
+            "tokenValidation": "Identity Provider",
+            "minimumScopes": [
+              "notifications.send",
+              "notifications.read"
+            ],
+            "tokenExpiry": "15m"
+          }
+        },
+        {
+          "requirement-url": "https://internal-policy.acme.com/security/zero-trust",
+          "config": {
+            "mutualTLS": true,
+            "serviceIdentity": "required",
+            "certificateValidation": "strict"
+          }
+        }
+      ]
+    },
+    "data-protection": {
+      "description": "Data encryption and PII handling requirements",
+      "requirements": [
+        {
+          "requirement-url": "https://internal-policy.acme.com/security/encryption-in-transit",
+          "config": {
+            "minimumTLS": "1.3",
+            "cipherSuites": [
+              "TLS_AES_256_GCM_SHA384",
+              "TLS_CHACHA20_POLY1305_SHA256"
+            ]
+          }
+        },
+        {
+          "requirement-url": "https://internal-policy.acme.com/compliance/gdpr-pii-handling",
+          "config": {
+            "dataRetention": "90 days",
+            "rightToErasure": true,
+            "consentRequired": true
+          }
+        }
+      ]
+    },
+    "encryption-at-rest": {
+      "description": "All persistent data must be encrypted at rest using approved algorithms and key management",
+      "requirements": [
+        {
+          "requirement-url": "https://internal-policy.acme.com/security/encryption-at-rest",
+          "config": {
+            "algorithm": "AES-256-GCM",
+            "keyManagementService": "AWS KMS",
+            "keyRotation": "90 days",
+            "scope": [
+              "databases",
+              "message-queues",
+              "backups",
+              "logs"
+            ]
+          }
+        },
+        {
+          "requirement-url": "https://internal-policy.acme.com/security/field-level-encryption",
+          "config": {
+            "piiFields": [
+              "emailAddress",
+              "phoneNumber",
+              "userName"
+            ],
+            "encryptionAlgorithm": "AES-256-GCM",
+            "keyPerRecord": false,
+            "keyPerField": true
+          }
+        }
+      ]
+    },
+    "audit": {
+      "description": "Audit logging and security event tracking requirements",
+      "requirements": [
+        {
+          "requirement-url": "https://internal-policy.acme.com/audit/security-events",
+          "config": {
+            "immutableLogs": true,
+            "retention": "7 years",
+            "logEvents": [
+              "authentication-success",
+              "authentication-failure",
+              "authorization-failure",
+              "data-access"
+            ]
+          }
+        }
+      ]
+    },
+    "pii-audit": {
+      "description": "Comprehensive audit logging for all PII access and modifications",
+      "requirements": [
+        {
+          "requirement-url": "https://internal-policy.acme.com/audit/pii-access",
+          "config": {
+            "logLevel": "detailed",
+            "events": [
+              "pii-read",
+              "pii-write",
+              "pii-delete",
+              "pii-export",
+              "encryption-key-access",
+              "failed-access-attempt"
+            ],
+            "logAttributes": [
+              "userId",
+              "timestamp",
+              "ipAddress",
+              "userAgent",
+              "fieldNames",
+              "operation"
+            ],
+            "storage": "immutable-append-only",
+            "retention": "7-years",
+            "alerting": {
+              "unusualAccessPatterns": true,
+              "bulkExports": true,
+              "failedAttempts": 3
+            }
+          }
+        }
+      ]
+    },
+    "data-masking": {
+      "description": "Mask PII in logs, error messages, and non-production environments",
+      "requirements": [
+        {
+          "requirement-url": "https://internal-policy.acme.com/security/data-masking",
+          "config": {
+            "logMasking": {
+              "email": "***@***.com",
+              "phone": "***-***-1234",
+              "fullMask": [
+                "ssn",
+                "creditCard"
+              ]
+            },
+            "environmentRules": {
+              "production": "hash-based-masking",
+              "staging": "static-masking",
+              "development": "synthetic-data"
+            },
+            "preserveFormat": true,
+            "reversible": false
+          }
+        }
+      ]
+    },
+    "pii-lifecycle": {
+      "description": "Automated PII data retention and deletion policies",
+      "requirements": [
+        {
+          "requirement-url": "https://internal-policy.acme.com/compliance/data-lifecycle",
+          "config": {
+            "retention": {
+              "activeNotifications": "90-days",
+              "completedNotifications": "1-year",
+              "failedNotifications": "30-days"
+            },
+            "deletion": {
+              "method": "crypto-shredding",
+              "verification": "required",
+              "softDelete": "30-days",
+              "hardDelete": "automated"
+            },
+            "rightToErasure": {
+              "responseTime": "30-days",
+              "verificationRequired": true,
+              "cascadeDelete": true
+            }
+          }
+        }
+      ]
+    }
+  },
   "flows": [
     {
       "unique-id": "user-registration-welcome-email-flow",
@@ -108,7 +293,63 @@
           "port": 443,
           "path": "/api/v1/notifications"
         }
-      ]
+      ],
+      "controls": {
+        "authentication": {
+          "description": "API Gateway enforces OAuth2 JWT token validation for all incoming requests",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/api-gateway-auth",
+              "config": {
+                "provider": "identity-provider",
+                "tokenType": "JWT",
+                "validationEndpoint": "/oauth/introspect",
+                "cacheTokens": true,
+                "cacheTTL": 300,
+                "requireSecureTransport": true,
+                "signatureAlgorithm": "RS256"
+              }
+            }
+          ]
+        },
+        "authorization": {
+          "description": "API Gateway enforces role-based access control and rate limiting",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/api-authorization",
+              "config": {
+                "model": "RBAC",
+                "rateLimiting": {
+                  "perUser": 1000,
+                  "perIP": 100,
+                  "window": "1m"
+                },
+                "allowedScopes": [
+                  "notifications.send",
+                  "notifications.read",
+                  "notifications.delete"
+                ]
+              }
+            }
+          ]
+        },
+        "security": {
+          "description": "API Gateway security hardening requirements",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/api-gateway-hardening",
+              "config": {
+                "wafEnabled": true,
+                "ddosProtection": true,
+                "corsPolicy": "strict",
+                "allowedOrigins": [
+                  "https://*.acme.com"
+                ]
+              }
+            }
+          ]
+        }
+      }
     },
     {
       "unique-id": "message-processor",
@@ -136,6 +377,60 @@
           "endpoint": "/actuator/health",
           "port": 8080,
           "protocol": "HTTP"
+        }
+      },
+      "controls": {
+        "field-level-encryption": {
+          "description": "Application-level encryption for PII fields before storage",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/field-encryption",
+              "config": {
+                "algorithm": "AES-256-GCM",
+                "keyDerivation": "PBKDF2-SHA256",
+                "iterations": 10000,
+                "encryptedFields": {
+                  "recipient_email": {
+                    "deterministic": false,
+                    "searchable": false,
+                    "indexable": "hashed"
+                  },
+                  "recipient_phone": {
+                    "deterministic": false,
+                    "format": "E.164-preserved"
+                  },
+                  "notification_content": {
+                    "deterministic": false,
+                    "tokenization": true
+                  }
+                },
+                "keyRotationPolicy": "90-days",
+                "keyWrapping": "envelope-encryption"
+              }
+            }
+          ]
+        },
+        "pii-tokenization": {
+          "description": "Replace PII with tokens for non-sensitive operations",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/tokenization",
+              "config": {
+                "provider": "HashiCorp Vault",
+                "tokenFormat": "format-preserving",
+                "fields": [
+                  "recipient_email",
+                  "recipient_phone"
+                ],
+                "detokenization": {
+                  "requiresAuth": true,
+                  "auditLogging": true,
+                  "rateLimit": 100
+                },
+                "tokenTTL": "24h"
+              }
+            }
+          ]
         }
       }
     },
@@ -174,7 +469,128 @@
           "protocol": "JDBC",
           "port": 5432
         }
-      ]
+      ],
+      "controls": {
+        "encryption-at-rest": {
+          "description": "PostgreSQL database encryption for notification history and PII",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/rds-encryption",
+              "config": {
+                "transparentDataEncryption": true,
+                "kmsKeyArn": "arn:aws:kms:us-east-1:123456789:key/notification-store",
+                "storageEncrypted": true,
+                "backupEncryption": true,
+                "performanceInsights": {
+                  "enabled": true,
+                  "kmsKeyId": "arn:aws:kms:us-east-1:123456789:key/performance-insights"
+                }
+              }
+            }
+          ]
+        },
+        "encryption-in-transit": {
+          "description": "PostgreSQL SSL/TLS requirements for client connections",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/database-ssl",
+              "config": {
+                "sslMode": "verify-full",
+                "tlsVersion": "1.3",
+                "certificateValidation": "required",
+                "clientCertificates": false
+              }
+            }
+          ]
+        },
+        "pii-protection": {
+          "description": "Column-level encryption for sensitive notification data",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/column-encryption",
+              "config": {
+                "encryptedColumns": [
+                  "recipient_email",
+                  "recipient_phone",
+                  "notification_content",
+                  "user_metadata"
+                ],
+                "encryptionKey": "application-level",
+                "searchableEncryption": false
+              }
+            }
+          ]
+        },
+        "pii-access-control": {
+          "description": "Role-based and attribute-based access for PII fields",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/pii-access",
+              "config": {
+                "model": "ABAC",
+                "policies": {
+                  "read-email": {
+                    "roles": [
+                      "notification-admin",
+                      "compliance-officer"
+                    ],
+                    "requiresMFA": true,
+                    "sessionDuration": "15m"
+                  },
+                  "read-phone": {
+                    "roles": [
+                      "notification-admin"
+                    ],
+                    "requiresApproval": true,
+                    "approver": "security-team"
+                  }
+                },
+                "breakGlassAccess": {
+                  "enabled": true,
+                  "requiresIncidentTicket": true,
+                  "notifySecurityTeam": true
+                }
+              }
+            }
+          ]
+        },
+        "pii-discovery": {
+          "description": "Automated PII field discovery and classification",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/pii-discovery",
+              "config": {
+                "scanningEnabled": true,
+                "scanFrequency": "weekly",
+                "classificationLevels": [
+                  "public",
+                  "internal",
+                  "confidential",
+                  "restricted"
+                ],
+                "piiCategories": {
+                  "direct-identifiers": [
+                    "email",
+                    "phone",
+                    "ssn",
+                    "passport"
+                  ],
+                  "quasi-identifiers": [
+                    "zipCode",
+                    "birthDate",
+                    "ipAddress"
+                  ],
+                  "sensitive-attributes": [
+                    "healthInfo",
+                    "financialData",
+                    "biometrics"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
     },
     {
       "unique-id": "email-provider",
@@ -321,7 +737,71 @@
             ]
           }
         }
-      ]
+      ],
+      "controls": {
+        "encryption-at-rest": {
+          "description": "Kafka topic and log encryption for event data",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/kafka-encryption",
+              "config": {
+                "logEncryption": true,
+                "encryptionAlgorithm": "AES-256-GCM",
+                "storageClass": "encrypted",
+                "kmsKeyArn": "arn:aws:kms:us-east-1:123456789:key/kafka-storage",
+                "topicRetention": "7 days"
+              }
+            }
+          ]
+        },
+        "encryption-in-transit": {
+          "description": "Kafka broker and client TLS encryption requirements",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/kafka-tls",
+              "config": {
+                "listeners": "SSL://9093",
+                "securityProtocol": "SASL_SSL",
+                "saslMechanism": "SCRAM-SHA-512",
+                "sslProtocol": "TLSv1.3",
+                "sslCipherSuites": [
+                  "TLS_AES_256_GCM_SHA384"
+                ],
+                "clientAuth": "required"
+              }
+            }
+          ]
+        },
+        "access-control": {
+          "description": "Kafka ACLs for topic-level authorization",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/kafka-acls",
+              "config": {
+                "aclEnabled": true,
+                "topics": {
+                  "notification.email": {
+                    "read": [
+                      "email-consumer-group"
+                    ],
+                    "write": [
+                      "message-processor"
+                    ]
+                  },
+                  "notification.webhook": {
+                    "read": [
+                      "webhook-consumer-group"
+                    ],
+                    "write": [
+                      "message-processor"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "relationships": [
@@ -342,7 +822,24 @@
       "encrypted": true,
       "dataClassification": "confidential",
       "sla": "99.99% uptime with <100ms response time for token validation",
-      "mode": "synchronous"
+      "mode": "synchronous",
+      "controls": {
+        "authentication": {
+          "description": "Token validation protocol and performance requirements",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/token-validation-protocol",
+              "config": {
+                "protocol": "OAuth2 RFC 7662 Token Introspection",
+                "timeoutMs": 100,
+                "retryPolicy": "exponential-backoff",
+                "maxRetries": 2,
+                "fallbackBehavior": "reject-request"
+              }
+            }
+          ]
+        }
+      }
     },
     {
       "unique-id": "api-to-processor",
@@ -380,7 +877,23 @@
       "encrypted": true,
       "dataClassification": "confidential",
       "sla": "99.95% within 100ms",
-      "mode": "synchronous"
+      "mode": "synchronous",
+      "controls": {
+        "encryption-in-transit": {
+          "description": "PostgreSQL connection encryption requirements",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/jdbc-ssl",
+              "config": {
+                "sslMode": "verify-full",
+                "sslFactory": "org.postgresql.ssl.DefaultJavaSSLFactory",
+                "connectionTimeout": 5000,
+                "sslRootCert": "/etc/ssl/certs/rds-ca-2024-bundle.pem"
+              }
+            }
+          ]
+        }
+      }
     },
     {
       "unique-id": "processor-to-kafka",
@@ -399,7 +912,24 @@
       "encrypted": true,
       "dataClassification": "internal",
       "sla": "99.95% uptime with guaranteed message delivery and ordering",
-      "mode": "asynchronous"
+      "mode": "asynchronous",
+      "controls": {
+        "encryption-in-transit": {
+          "description": "Kafka TLS encryption for producer connections",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/kafka-producer-tls",
+              "config": {
+                "securityProtocol": "SASL_SSL",
+                "saslMechanism": "SCRAM-SHA-512",
+                "sslTruststoreLocation": "/etc/kafka/ssl/truststore.jks",
+                "sslKeystoreLocation": "/etc/kafka/ssl/keystore.jks",
+                "sslEndpointIdentificationAlgorithm": "https"
+              }
+            }
+          ]
+        }
+      }
     },
     {
       "unique-id": "kafka-to-email-provider",
@@ -418,7 +948,24 @@
       "encrypted": true,
       "dataClassification": "internal",
       "sla": "best-effort, retry 3 times",
-      "mode": "asynchronous"
+      "mode": "asynchronous",
+      "controls": {
+        "encryption-in-transit": {
+          "description": "Kafka TLS encryption for consumer connections",
+          "requirements": [
+            {
+              "requirement-url": "https://internal-policy.acme.com/security/kafka-consumer-tls",
+              "config": {
+                "securityProtocol": "SASL_SSL",
+                "saslMechanism": "SCRAM-SHA-512",
+                "sslTruststoreLocation": "/etc/kafka/ssl/truststore.jks",
+                "sslKeystoreLocation": "/etc/kafka/ssl/keystore.jks",
+                "sslEndpointIdentificationAlgorithm": "https"
+              }
+            }
+          ]
+        }
+      }
     },
     {
       "unique-id": "kafka-to-webhook-target",
