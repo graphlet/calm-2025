@@ -4,110 +4,326 @@
   "description": "Pattern for a Notification Service that receives alerts and routes them to storage, email, and webhooks.",
   "type": "object",
   "properties": {
+    "unique-id": {
+      "type": "string",
+      "description": "Unique identifier for the architecture"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the architecture"
+    },
     "nodes": {
       "type": "array",
       "prefixItems": [
         {
           "type": "object",
           "properties": {
-            "unique-id": { "const": "api-endpoint" },
-            "node-type": { "const": "gateway" },
-            "name": { "const": "API Gateway" }
+            "unique-id": {
+              "const": "api-endpoint"
+            },
+            "node-type": {
+              "const": "gateway"
+            },
+            "name": {
+              "const": "API Gateway"
+            },
+            "description": {
+              "type": "string"
+            }
           },
-          "required": ["unique-id", "node-type", "name"],
+          "required": [
+            "unique-id",
+            "node-type",
+            "name",
+            "description"
+          ],
           "additionalProperties": true
         },
         {
           "type": "object",
           "properties": {
-            "unique-id": { "const": "message-processor" },
-            "node-type": { "const": "service" },
-            "name": { "const": "Message Processor" }
+            "unique-id": {
+              "const": "message-processor"
+            },
+            "node-type": {
+              "const": "service"
+            },
+            "name": {
+              "const": "Message Processor"
+            },
+            "description": {
+              "type": "string"
+            }
           },
-          "required": ["unique-id", "node-type", "name"],
+          "required": [
+            "unique-id",
+            "node-type",
+            "name",
+            "description"
+          ],
           "additionalProperties": true
         },
         {
           "type": "object",
           "properties": {
-            "unique-id": { "const": "message-store" },
-            "node-type": { "const": "database" },
-            "name": { "const": "Message Store" }
+            "unique-id": {
+              "const": "message-store"
+            },
+            "node-type": {
+              "const": "database"
+            },
+            "name": {
+              "const": "Message Store"
+            },
+            "description": {
+              "type": "string"
+            }
           },
-          "required": ["unique-id", "node-type", "name"],
+          "required": [
+            "unique-id",
+            "node-type",
+            "name",
+            "description"
+          ],
           "additionalProperties": true
         },
         {
           "type": "object",
           "properties": {
-            "unique-id": { "const": "email-provider" },
-            "node-type": { "const": "service" },
-            "name": { "const": "Email Provider" }
+            "unique-id": {
+              "const": "email-provider"
+            },
+            "node-type": {
+              "const": "service"
+            },
+            "name": {
+              "const": "Email Provider"
+            },
+            "description": {
+              "type": "string"
+            }
           },
-          "required": ["unique-id", "node-type", "name"],
+          "required": [
+            "unique-id",
+            "node-type",
+            "name",
+            "description"
+          ],
           "additionalProperties": true
         },
         {
           "type": "object",
           "properties": {
-            "unique-id": { "const": "webhook-target" },
-            "node-type": { "const": "service" },
-            "name": { "const": "Web hook" }
+            "unique-id": {
+              "const": "webhook-target"
+            },
+            "node-type": {
+              "const": "service"
+            },
+            "name": {
+              "const": "Web hook"
+            },
+            "description": {
+              "type": "string"
+            }
           },
-          "required": ["unique-id", "node-type", "name"],
+          "required": [
+            "unique-id",
+            "node-type",
+            "name",
+            "description"
+          ],
+          "additionalProperties": true
+        },
+        {
+          "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node",
+          "type": "object",
+          "properties": {
+            "unique-id": {
+              "const": "identity-provider"
+            },
+            "node-type": {
+              "const": "service"
+            },
+            "name": {
+              "const": "Identity Provider"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "unique-id",
+            "node-type",
+            "name",
+            "description"
+          ],
+          "additionalProperties": true
+        },
+        {
+          "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/node",
+          "type": "object",
+          "properties": {
+            "unique-id": {
+              "const": "kafka-event-bus"
+            },
+            "node-type": {
+              "const": "system"
+            },
+            "name": {
+              "const": "Kafka Event Bus"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "unique-id",
+            "node-type",
+            "name",
+            "description"
+          ],
           "additionalProperties": true
         }
       ],
-      "minItems": 5,
-      "maxItems": 5
+      "minItems": 7
     },
     "relationships": {
       "type": "array",
+      "minItems": 4,
       "prefixItems": [
         {
+          "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/relationship",
           "type": "object",
           "properties": {
-            "unique-id": { "const": "api-to-processor" },
-            "source": { "const": "api-endpoint" },
-            "target": { "const": "message-processor" }
+            "unique-id": {
+              "const": "api-to-identity-provider"
+            },
+            "relationship-type": {
+              "const": {
+                "connects": {
+                  "source": {
+                    "node": "api-endpoint"
+                  },
+                  "destination": {
+                    "node": "identity-provider"
+                  }
+                }
+              }
+            }
           },
-          "required": ["unique-id", "source", "target"],
-          "additionalProperties": true
+          "required": [
+            "unique-id",
+            "relationship-type"
+          ]
         },
         {
+          "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/relationship",
           "type": "object",
           "properties": {
-            "unique-id": { "const": "processor-to-message-store" },
-            "source": { "const": "message-processor" },
-            "target": { "const": "message-store" }
+            "unique-id": {
+              "const": "api-to-processor"
+            },
+            "relationship-type": {
+              "const": {
+                "connects": {
+                  "source": {
+                    "node": "api-endpoint"
+                  },
+                  "destination": {
+                    "node": "message-processor"
+                  }
+                }
+              }
+            }
           },
-          "required": ["unique-id", "source", "target"],
-          "additionalProperties": true
+          "required": [
+            "unique-id",
+            "relationship-type"
+          ]
         },
         {
+          "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/relationship",
           "type": "object",
           "properties": {
-            "unique-id": { "const": "processor-to-email-provider" },
-            "source": { "const": "message-processor" },
-            "target": { "const": "email-provider" }
+            "unique-id": {
+              "const": "processor-to-message-store"
+            },
+            "relationship-type": {
+              "const": {
+                "connects": {
+                  "source": {
+                    "node": "message-processor"
+                  },
+                  "destination": {
+                    "node": "message-store"
+                  }
+                }
+              }
+            }
           },
-          "required": ["unique-id", "source", "target"],
-          "additionalProperties": true
+          "required": [
+            "unique-id",
+            "relationship-type"
+          ]
         },
         {
+          "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/relationship",
           "type": "object",
           "properties": {
-            "unique-id": { "const": "processor-to-webhook-provider" },
-            "source": { "const": "message-processor" },
-            "target": { "const": "webhook-target" }
+            "unique-id": {
+              "const": "processor-to-kafka"
+            },
+            "relationship-type": {
+              "const": {
+                "connects": {
+                  "source": {
+                    "node": "message-processor"
+                  },
+                  "destination": {
+                    "node": "kafka-event-bus"
+                  }
+                }
+              }
+            }
           },
-          "required": ["unique-id", "source", "target"],
-          "additionalProperties": true
+          "required": [
+            "unique-id",
+            "relationship-type"
+          ]
+        },
+        {
+          "$ref": "https://calm.finos.org/release/1.1/meta/core.json#/defs/relationship",
+          "type": "object",
+          "properties": {
+            "unique-id": {
+              "const": "kafka-to-email-provider"
+            },
+            "relationship-type": {
+              "const": {
+                "connects": {
+                  "source": {
+                    "node": "kafka-event-bus"
+                  },
+                  "destination": {
+                    "node": "email-provider"
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "unique-id",
+            "relationship-type"
+          ]
         }
-      ],
-      "minItems": 4,
-      "maxItems": 4
+      ]
     }
   },
-  "required": ["nodes", "relationships"]
+  "required": [
+    "unique-id",
+    "name",
+    "nodes",
+    "relationships"
+  ]
 }

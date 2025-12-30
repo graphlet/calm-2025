@@ -25,16 +25,19 @@ We will implement **asynchronous notification processing using Kafka Event Bus**
 ### Architecture Components
 
 1. **API Gateway** (`api-endpoint`)
+
    - Accepts notification requests via REST API
    - Validates requests and authenticates via Identity Provider
    - Synchronously acknowledges receipt to clients
 
 2. **Message Processor** (`message-processor`)
+
    - Receives validated requests from API Gateway
    - Persists notifications to Message Store for audit trail
    - Publishes notification events to Kafka topics based on delivery channel
 
 3. **Kafka Event Bus** (`kafka-event-bus`)
+
    - Provides durable message queuing with partitioning for parallel processing
    - Topics: `notification.email`, `notification.webhook`
    - Guarantees at-least-once delivery semantics
@@ -102,29 +105,137 @@ Client → API Gateway → Identity Provider (auth)
 
 ### Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Kafka cluster failure | Complete notification processing halt | 3-node cluster with replication factor 3, regular backups |
-| Consumer lag during peak load | Delayed notifications | Auto-scaling consumer groups, alerting on lag > 1000 messages |
-| Poison messages blocking consumers | Channel unavailable | Dead-letter queues, automated message inspection and quarantine |
-| Schema evolution breaking consumers | Deployment failures | Schema registry with backward compatibility validation |
+| Risk                                | Impact                                | Mitigation                                                      |
+| ----------------------------------- | ------------------------------------- | --------------------------------------------------------------- |
+| Kafka cluster failure               | Complete notification processing halt | 3-node cluster with replication factor 3, regular backups       |
+| Consumer lag during peak load       | Delayed notifications                 | Auto-scaling consumer groups, alerting on lag > 1000 messages   |
+| Poison messages blocking consumers  | Channel unavailable                   | Dead-letter queues, automated message inspection and quarantine |
+| Schema evolution breaking consumers | Deployment failures                   | Schema registry with backward compatibility validation          |
+
+### Security Tradeoffs
+
+**Advantages:**
+
+- **Defense in Depth**: Kafka acts as security boundary between API and delivery providers
+- **Audit Trail**: All messages persisted in Kafka topics provide immutable audit log
+- **Access Segmentation**: Consumer groups enforce least-privilege access to topics
+- **PII Isolation**: Sensitive data encrypted at rest in Kafka logs (AES-256-GCM)
+- **Zero Trust**: SASL_SSL with mutual TLS between all Kafka clients and brokers
+
+**Disadvantages:**
+
+- **Expanded Attack Surface**: Kafka cluster introduces 5 additional broker nodes to secure
+  - Mitigation: Network segmentation, private VPC, security group restrictions
+- **Key Management Complexity**: Separate keystores/truststores for each consumer group
+  - Mitigation: Centralized key management via AWS KMS, automated rotation
+- **At-Rest Encryption Overhead**: Topic encryption adds ~10-15ms latency per message
+  - Mitigation: Acceptable tradeoff for compliance requirements (GDPR, SOC2)
+- **Consumer Authentication**: Each consumer group requires SASL credentials management
+  - Mitigation: Integration with Identity Provider for credential lifecycle
+- **Message Replay Risk**: Kafka offset manipulation could replay sensitive notifications
+  - Mitigation: ACLs restrict offset management to admin roles only, audit logging enabled
+
+**Security Requirements Introduced:**
+
+- TLS 1.3 mandatory for all Kafka connections (no plaintext)
+- SASL_SCRAM-SHA-512 for producer/consumer authentication
+- Topic-level ACLs enforced for notification.email and notification.webhook
+- Log encryption enabled with 7-day retention and automatic purging
+- Certificate rotation every 90 days via automated pipeline
+
+## Threat Model
+
+### Assets
+
+1. **Notification Messages**: User PII (email, phone), notification content
+2. **Kafka Credentials**: SASL usernames/passwords, TLS certificates/keys
+3. **Kafka Infrastructure**: Broker nodes, ZooKeeper ensemble, persistent volumes
+4. **Message Store Database**: Historical notification records with delivery status
+
+### Threat Actors
+
+- **External Attackers**: Unauthorized access to notification data
+- **Malicious Insiders**: Platform team members with Kafka admin access
+- **Compromised Consumers**: Producer/consumer services with leaked credentials
+- **Supply Chain Attacks**: Vulnerabilities in Kafka client libraries
+
+### Threats and Mitigations
+
+| Threat                                  | STRIDE                       | Likelihood | Impact   | Mitigation                                                                    | Residual Risk |
+| --------------------------------------- | ---------------------------- | ---------- | -------- | ----------------------------------------------------------------------------- | ------------- |
+| **Unauthorized topic access**           | Information Disclosure       | Medium     | High     | Topic ACLs + SASL auth + audit logging                                        | Low           |
+| **Message tampering in transit**        | Tampering                    | Medium     | High     | TLS 1.3 with mutual auth, cert pinning                                        | Low           |
+| **Credential theft from consumers**     | Elevation of Privilege       | Medium     | High     | Short-lived tokens, credential vault (HashiCorp), rotation every 90 days      | Medium        |
+| **Kafka broker compromise**             | Tampering, Denial of Service | Low        | Critical | OS hardening, patch management, network isolation, IDS/IPS                    | Medium        |
+| **Message replay attacks**              | Spoofing                     | Low        | Medium   | Idempotency tokens, consumer offset ACLs, timestamp validation                | Low           |
+| **Consumer impersonation**              | Spoofing                     | Medium     | High     | Client certificate validation, service mesh identity (Istio)                  | Low           |
+| **Kafka ZooKeeper compromise**          | Elevation of Privilege       | Low        | Critical | Separate ZK cluster, ACLs, no public access, encrypted comms                  | Medium        |
+| **Denial of service via message flood** | Denial of Service            | Medium     | Medium   | Rate limiting at API Gateway (1000 req/user/min), Kafka quotas per producer   | Low           |
+| **PII leakage in logs**                 | Information Disclosure       | High       | High     | Log masking (**_@_**.com), no PII in Kafka metrics, encrypted log storage     | Low           |
+| **Backup data exfiltration**            | Information Disclosure       | Low        | High     | Encrypted backups (AWS KMS), access restricted to backup service account only | Low           |
+
+### Security Controls by Layer
+
+**Network Layer:**
+
+- Private VPC with no internet-facing Kafka brokers
+- Security groups: Only Message Processor → Kafka (9093), Email/Webhook Consumers → Kafka (9093)
+- No SSH access to broker nodes (SSM Session Manager only)
+
+**Authentication Layer:**
+
+- SASL_SCRAM-SHA-512 for all producer/consumer connections
+- Client certificates issued by internal CA with 90-day expiry
+- Identity Provider integration for token-based consumer authentication
+- Break-glass access requires incident ticket + security team approval
+
+**Authorization Layer:**
+
+- Topic ACLs: `message-processor` WRITE to notification.\*, consumers READ from specific topics
+- Offset management restricted to admin role only
+- Schema registry with RBAC for schema evolution
+
+**Data Protection Layer:**
+
+- TLS 1.3 in transit with approved cipher suites (TLS_AES_256_GCM_SHA384)
+- AES-256-GCM at rest for Kafka logs and persistent volumes
+- Field-level encryption for PII in message payloads (email, phone)
+- PostgreSQL SSL verify-full mode for Message Store connections
+
+**Monitoring & Response Layer:**
+
+- SIEM integration for security events (failed auth, ACL violations, unusual topic access)
+- Alerting on consumer lag > 1000 (potential DoS), unauthorized topic creation
+- Automated response: Revoke credentials after 3 failed auth attempts
+- Quarterly security audits of Kafka ACLs and consumer permissions
+
+### Compliance Impact
+
+- **GDPR**: Kafka retention (7 days) + right to erasure implemented via topic compaction and tombstone records
+- **SOC2**: Audit logs for all topic access, annual penetration testing
+- **PCI-DSS**: Not applicable (no payment card data in notifications)
+- **CCPA**: Data subject access requests supported via Message Store queries
 
 ## Alternatives Considered
 
 ### 1. Synchronous Processing
+
 - **Rejected**: API latency directly tied to slowest delivery provider, poor scalability
 - **Use Case**: Only viable for low-volume (<100 notifications/min) use cases
 
 ### 2. Database-Based Queue (PostgreSQL)
+
 - **Rejected**: Limited throughput (~1000 msg/sec), no built-in partitioning, polling overhead
 - **Use Case**: Suitable for simpler systems with <5000 notifications/day
 
 ### 3. AWS SQS/SNS
+
 - **Considered**: Lower operational overhead, fully managed
 - **Rejected**: Higher per-message cost at our volume (~$5000/month vs. $2000), less control over infrastructure
 - **Future Option**: May revisit for cloud-native deployment
 
 ### 4. RabbitMQ
+
 - **Considered**: Similar features to Kafka, lower operational complexity
 - **Rejected**: Lower throughput (20k msg/sec vs. Kafka's 100k+ msg/sec), less suitable for event streaming patterns
 

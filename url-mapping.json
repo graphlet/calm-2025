@@ -4,5 +4,6 @@
     "https://example.com/patterns/company-base-pattern.json": "patterns/company-base-pattern.json",
     "https://example.com/standards/acme-node-standard.json": "standards/acme-node-standard.json",
     "https://example.com/standards/acme-relationship-standard.json": "standards/acme-relationship-standard.json",
-    "https://example.com/patterns/acme-base-pattern.json": "patterns/acme-base-pattern.json"
+    "https://example.com/patterns/acme-base-pattern.json": "patterns/acme-base-pattern.json",
+    "https://example.com/patterns/notification-service-pattern.json": "patterns/notification-service-pattern.json"
 }
